@@ -1,0 +1,112 @@
+:host {
+  display: block;
+  padding: 20px;
+  background-color: #f5f5f5; // Cor de fundo suave
+  font-family: 'Roboto', sans-serif; // Fonte padrão do Material Design
+}
+
+.po-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 25px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); // Sombra sutil
+
+  h2 {
+    color: #3f51b5; // Cor primária do Material (Indigo)
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 400;
+  }
+}
+
+.po-form {
+  display: grid;
+  grid-template-columns: 1fr; // Uma coluna por padrão
+  gap: 10px; // Espaçamento entre os campos reduzido
+
+  // Em telas maiores, usar duas colunas
+  @media (min-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px; // Espaçamento entre os campos reduzido
+  }
+}
+
+// Estilo para os campos do formulário
+.form-field {
+  width: 100%;
+}
+
+// Campo que ocupa a largura total mesmo em layout de duas colunas
+.form-field-full-width {
+  @media (min-width: 600px) {
+    grid-column: 1 / -1; // Ocupa todas as colunas
+  }
+}
+
+// Ajustes para o datepicker
+::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
+  padding-top: 1em; // Ajuste para alinhar melhor o label
+}
+
+::ng-deep .mat-datepicker-toggle-default-icon {
+  color: #3f51b5; // Cor do ícone do datepicker
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 20px;
+  grid-column: 1 / -1; // Ocupa todas as colunas
+
+  button {
+    min-width: 120px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px); // Pequena animação no hover
+    }
+
+    &:active {
+      transform: translateY(0px);
+    }
+  }
+
+  button[mat-raised-button][color="primary"] {
+    background-color: #3f51b5; // Indigo
+    color: white;
+
+    &:hover {
+      background-color: #303f9f; // Indigo mais escuro
+    }
+  }
+
+  button[mat-stroked-button][color="warn"] {
+    border-color: #f44336; // Vermelho
+    color: #f44336;
+
+    &:hover {
+      background-color: rgba(244, 67, 54, 0.1);
+    }
+  }
+}
+
+// Animação sutil de entrada para o container do formulário
+.po-form-container {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
