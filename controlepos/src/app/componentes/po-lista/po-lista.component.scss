@@ -8,28 +8,88 @@
   background-color: #f9f9f9; // Um fundo levemente diferente para o container
 }
 
+.container {
+  margin: 20px;
+  padding: 20px;
+  background-color: #fff; // Adiciona um fundo branco ao container principal
+}
+
+.po-list-card {
+  margin: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1); // Sombra mais suave
+  // max-width: 1200px; // Opcional: se quiser limitar a largura máxima do card
+  // margin-left: auto;  // Opcional: para centralizar se max-width for usado
+  // margin-right: auto; // Opcional: para centralizar se max-width for usado
+}
+
+mat-card-header {
+  padding: 0; // Ajusta o padding do cabeçalho do card
+  // Adicionado para remover a borda inferior padrão se não for desejada
+  // border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+.custom-card-header {
+  display: flex;
+  justify-content: flex-end; // Apenas botões, alinhar à direita
+  align-items: center;
+  padding: 16px 24px;
+  width: 100%; // Adicionado para garantir que o header ocupe a largura total
+  box-sizing: border-box; // Para que o padding não aumente a largura total
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px; 
+  // flex-grow e flex-shrink não são mais necessários aqui se o pai é flex-end
+}
+
+.filter-field {
+  width: 300px; // Manter a largura definida anteriormente, ou ajustar conforme necessário
+  // margin-left: 0; // Pode não ser mais necessário
+  // margin-right: 0; // Pode não ser mais necessário
+  // flex-grow: 0;    // Removido, não é mais filho direto de um flex container com space-between
+  // flex-shrink: 0;  // Removido
+  display: block; // Para garantir que ocupe a largura e permita margens
+  margin-bottom: 16px; // Adicionar espaço abaixo do filtro, antes da tabela
+}
+
+.page-header {
+  margin-bottom: 20px;
+  h1 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+  }
+}
+
 .header-controls {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; // Botão à esquerda, filtro à direita
   align-items: center;
   margin-bottom: 20px;
-  flex-wrap: wrap;
-
-  h2 {
-    margin: 0 16px 0 0;
-    color: #3f51b5; // Cor primária do Material
-  }
+  gap: 16px; // Espaço entre o botão e o filtro, se necessário
 
   .filter-field {
-    min-width: 250px;
-    max-width: 400px;
-    flex-grow: 1;
+    // Ocupa o espaço restante se necessário, mas com space-between deve alinhar à direita
+    // flex-grow: 1; // Descomente se quiser que o filtro ocupe mais espaço
+    min-width: 250px; // Garante uma largura mínima para o campo de filtro
   }
+}
+
+.table-container {
+  position: relative; // Para o sticky header funcionar corretamente
+  overflow: auto; // Para rolagem horizontal e vertical
+  max-height: 600px; // Limita a altura e força rolagem vertical
+  max-width: 100%;   // Garante que o container não exceda a largura do seu pai (mat-card-content)
+  margin-top: 20px; // Espaçamento acima da tabela
+  // border: 1px solid rgba(0, 0, 0, 0.12); // Borda sutil opcional
 }
 
 .table-responsive {
   overflow-x: auto; // Suporte para scroll horizontal
   border-radius: 4px; // Bordas arredondadas para a tabela
+  max-height: 600px; // Define uma altura máxima para a tabela, permitindo rolagem vertical
+  margin-bottom: 20px;
 }
 
 table {
@@ -40,16 +100,50 @@ table {
   background-color: #fff; // Fundo branco para a tabela
 }
 
-.mat-mdc-header-cell {
-  background-color: #e8eaf6; // Um azul claro para o cabeçalho
-  color: #3f51b5;
-  font-weight: 500;
-  font-size: 0.875rem;
-  padding: 12px 16px;
+// Estilos para manter o cabeçalho da tabela fixo (sticky)
+// .mat-elevation-z8 é a classe padrão da tabela, mas podemos ser mais específicos
+.mat-table {
+  width: 100%;
 }
 
+// Remover ou comentar as tentativas anteriores com ::ng-deep
+/*
+// Tentativa alternativa visando a linha do cabeçalho e suas células th
+:host ::ng-deep .mat-table .mat-header-row {
+  background-color: #3f51b5 !important; // Azul Material
+}
+
+:host ::ng-deep .mat-table .mat-header-row .mat-header-cell,
+:host ::ng-deep .mat-table .mat-header-row .mat-mdc-header-cell,
+:host ::ng-deep .mat-table .mat-header-row th { 
+  color: white !important;
+  font-weight: bold !important;
+  background-color: transparent !important; 
+}
+*/
+
+// Deixar uma regra bem básica ou nenhuma por enquanto para o cabeçalho
+.mat-header-cell,
+.mat-mdc-header-cell {
+  // Se necessário, podemos adicionar um background simples aqui para teste
+  // background-color: #f0f0f0; 
+  // color: #333;
+  font-weight: bold; // Manter o negrito padrão
+  background-color: #3f51b5; // Azul Material (indigo-500)
+  color: white;
+}
+
+.mat-row,
+.mat-mdc-row {
+  height: 43px; // Altura padrão é 48px. 48 * 0.9 = 43.2px. Arredondado para 43px.
+}
+
+.mat-cell,
 .mat-mdc-cell {
-  padding: 10px 16px;
+  padding: 6px 16px; // Ajustado de 10px 16px para 6px 16px
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   border-bottom-width: 1px;
   border-bottom-style: solid;
   border-bottom-color: rgba(0,0,0,.12);
@@ -64,10 +158,16 @@ table {
   border-bottom: none; // Remove a borda da última linha
 }
 
+.mat-mdc-row:hover {
+  background-color: #f0f0f0; // Efeito hover nas linhas
+}
+
 .mat-mdc-paginator { // Para Angular Material v15+
   background-color: #fff;
   border-top: 1px solid rgba(0,0,0,.12);
   border-radius: 0 0 4px 4px; // Arredondar cantos inferiores do paginador
+  margin-top: 20px;
+  background-color: #fff; // Garante que o paginador tenha fundo branco
 }
 
 .paginator-container {
@@ -90,6 +190,7 @@ table {
   &:hover {
     color: #303f9f; // Um tom mais escuro do primário no hover
   }
+  margin-right: 8px; // Espaçamento entre botões de ação
 }
 
 .mat-mdc-tooltip { // Para Angular Material v15+
@@ -102,4 +203,18 @@ table {
   color: rgba(0,0,0,0.54);
   font-style: italic;
   padding: 20px;
+  .mat-cell {
+    text-align: center;
+    padding: 20px;
+    color: #757575;
+  }
+}
+
+::ng-deep .filter-field .mat-form-field-wrapper {
+  padding-bottom: 0; // Remove padding extra que pode desalinhar
+}
+
+::ng-deep .filter-field .mat-form-field-infix {
+  padding-top: 0.5em; // Ajusta o alinhamento vertical do input
+  padding-bottom: 0.5em;
 }
