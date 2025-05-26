@@ -148,19 +148,7 @@ export class PoListaComponent implements OnInit, AfterViewInit {
         // Para MatTableDataSource, é bom atribuir uma nova referência de array para garantir a detecção de alterações.
         this.dataSource.data = [...MOCK_POS_DATA]; 
         console.log(`PO "${poParaDeletar.numero_do_po}" deletada da lista mock.`);
-        // Em uma aplicação real, você chamaria um serviço aqui para deletar no backend:
-        // this.poService.deletePo(poParaDeletar.numero_do_po).subscribe({
-        //   next: () => {
-        //     console.log('PO deletada com sucesso no backend.');
-        //     // Opcional: Notificar o usuário com um snackbar/toast
-        //   },
-        //   error: (err) => {
-        //     console.error('Erro ao deletar PO no backend:', err);
-        //     // Opcional: Reverter a remoção local ou notificar o usuário sobre o erro
-        //     MOCK_POS_DATA.splice(index, 0, poParaDeletar); // Exemplo de como reverter
-        //     this.dataSource.data = [...MOCK_POS_DATA];
-        //   }
-        // });
+   
       } else {
         console.warn(`PO "${poParaDeletar.numero_do_po}" não encontrada para deleção na lista mock.`);
       }

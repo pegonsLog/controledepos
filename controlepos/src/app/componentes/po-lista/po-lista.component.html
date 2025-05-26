@@ -14,7 +14,7 @@
       <div class="action-buttons-group" style="padding-bottom: 18px;">
         <button mat-raised-button color="primary" (click)="navegarParaNovoPo()" class="action-button">
           <mat-icon>add</mat-icon>
-          Novo PO
+          Adicionar PO
         </button>
       </div>
     </div>
@@ -111,6 +111,7 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Solicitante </th>
           <td mat-cell *matCellDef="let po"> {{po.solicitante}} </td>
         </ng-container>
+
 
         <!-- Coluna Tipo de Solicitante -->
         <ng-container matColumnDef="tipo_de_solicitante">
