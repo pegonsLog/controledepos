@@ -3,12 +3,13 @@ export interface Po {
   data_po: Date;
   tipo_de_logradouro: string;
   logradouro: string;
-  complemento_do_logradouro: string;
+  complemento: string;
   analista: string;
   data_implantacao: Date;
   funcionario_responsavel: string;
   bairro: string;
   observacoes: string;
+  detalhamento: string;
   especificacoes: string;
   e_mail: string;
   situacao: string;

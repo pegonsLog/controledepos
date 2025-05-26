@@ -1,12 +1,13 @@
 import { Routes } from '@angular/router';
 
-import { MenuComponent } from './componentes/menu/menu.component';
 import { PoFormComponent } from './componentes/po-form/po-form.component';
 import { PoListaComponent } from './componentes/po-lista/po-lista.component';
+import { PoDetalhesComponent } from './componentes/po-detalhes/po-detalhes.component';
 
 export const routes: Routes = [
-  { path: '', component: MenuComponent },
-  { path: 'novo-po', component: PoFormComponent }, // Rota para criar novo PO
-  { path: 'po/editar/:numero_do_po', component: PoFormComponent }, // Rota para editar PO existente
+  { path: '', component: PoListaComponent }, 
+  { path: 'novo-po', component: PoFormComponent }, 
+  { path: 'po/editar/:numero_do_po', component: PoFormComponent }, 
+  { path: 'po/detalhes/:numero_do_po', component: PoDetalhesComponent }, 
   { path: 'lista-pos', component: PoListaComponent }
 ];

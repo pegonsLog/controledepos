@@ -37,8 +37,8 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Complemento do Logradouro</mat-label>
-      <input matInput formControlName="complemento_do_logradouro" placeholder="Ex: Apto 101, Bloco B">
+      <mat-label>Complemento</mat-label>
+      <input matInput formControlName="complemento" placeholder="Ex: Apto 101, Bloco B">
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
@@ -78,6 +78,11 @@
     <mat-form-field appearance="outline" class="form-field-full-width">
       <mat-label>Observações</mat-label>
       <textarea matInput formControlName="observacoes" placeholder="Detalhes adicionais..."></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field-full-width">
+      <mat-label>Detalhamento</mat-label>
+      <textarea matInput formControlName="detalhamento" placeholder="Informações detalhadas sobre o PO..."></textarea>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field-full-width">
@@ -146,6 +151,7 @@
 
     <div class="form-actions">
       <button mat-raised-button color="primary" type="submit" [disabled]="!poForm.valid">Salvar PO</button>
+      <button mat-stroked-button type="button" (click)="voltarParaLista()" style="margin-left: 8px;">Voltar para Lista</button>
       <button mat-stroked-button color="warn" type="button" (click)="poForm.reset()" style="margin-left: 8px;">Limpar</button>
     </div>
 
