@@ -1,5 +1,5 @@
 .po-detalhes-container {
-  margin: 20px;
+  margin: 20px; /* Margem padrão para o contêiner */
   display: flex;
   justify-content: center;
 }
@@ -7,6 +7,8 @@
 .po-card {
   max-width: 800px;
   width: 100%;
+  margin-bottom: 20px; /* Margem externa para elementos após o card */
+  /* padding-bottom: 50px; */ /* Removido para focar o espaço na mat-card-actions */
 }
 
 mat-card-header {
@@ -62,9 +64,15 @@ mat-card-subtitle {
 }
 
 mat-card-actions {
-  padding: 16px;
+  /* min-height: 100px; */ /* Removido - Foco no padding-bottom */
+  padding-top: 16px;
+  padding-right: 16px;
+  padding-bottom: 30px; /* Padding inferior bem grande para diagnóstico */
+  padding-left: 16px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-end; /* Alinha o botão à direita */
+  align-items: flex-start;   /* Alinha o botão ao topo da área de ações */
+  /* background-color: lightblue; */ /* Removido após diagnóstico */
 }
 
 .po-nao-encontrada {

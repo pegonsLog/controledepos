@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router'; 
 
 // PoForm2Component import removida
 
@@ -12,4 +12,8 @@ import { RouterOutlet } from '@angular/router';
 })
 export class AppComponent {
   title = 'controlepos';
+
+  // constructor() {
+  //   console.log('AppComponent CONSTRUCTOR CALLED'); // Removido
+  // }
 }

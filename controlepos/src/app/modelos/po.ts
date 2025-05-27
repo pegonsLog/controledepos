@@ -1,5 +1,6 @@
 export interface Po {
-  numero_do_po: string;
+  id?: string; // Adicionar este campo para o ID do documento do Firestore
+  numero_po: string; // Alterado de numero_do_po
   data_po: string;
   tipo_de_logradouro: string;
   logradouro: string;
@@ -22,4 +23,3 @@ export interface Po {
   criado_em: string;
   ultima_edicao: string;
 }
-

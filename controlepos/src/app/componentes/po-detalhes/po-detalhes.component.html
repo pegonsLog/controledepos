@@ -1,13 +1,13 @@
 <div class="po-detalhes-container" *ngIf="po">
   <mat-card class="po-card">
     <mat-card-header>
-      <mat-card-title>PO nº: {{ po.numero_do_po }}</mat-card-title>
+      <mat-card-title>PO nº: {{ po.numero_po }}</mat-card-title>
     </mat-card-header>
     <mat-card-content>
       <div class="detalhes-grid">
         <div class="detalhe-item">
           <span class="detalhe-label">Número da PO:</span>
-          <span class="detalhe-valor">{{ po.numero_do_po }}</span>
+          <span class="detalhe-valor">{{ po.numero_po }}</span>
         </div>
         <div class="detalhe-item">
           <span class="detalhe-label">Data da PO:</span>
@@ -91,8 +91,8 @@
         </div>
       </div>
     </mat-card-content>
-    <mat-card-actions align="end">
-      <button mat-stroked-button color="primary" (click)="voltarParaLista()">
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="voltarParaLista()">
         <mat-icon>arrow_back</mat-icon>
         Voltar para Lista
       </button>
@@ -104,7 +104,7 @@
   <mat-card>
     <mat-card-content>
       <p>PO não encontrada ou dados não disponíveis.</p>
-      <button mat-stroked-button color="primary" (click)="voltarParaLista()">
+      <button mat-raised-button color="primary" (click)="voltarParaLista()">
         <mat-icon>arrow_back</mat-icon>
         Voltar para Lista
       </button>

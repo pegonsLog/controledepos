@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Po } from '../../modelos/po';
+import { Observable, of } from 'rxjs';
+import { switchMap, catchError, take, map } from 'rxjs/operators';
+import { GoogleSheetsService } from '../../services/google-sheets.service';
+import { PoService } from '../../services/po.service';
 
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -11,13 +15,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatMomentDateModule, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSelectModule } from '@angular/material/select';
 import * as moment from 'moment';
-
-const MOCK_POS_DATA: Po[] = [
-  { numero_do_po: 'PO-001', data_po: '2024-01-15', analista: 'João Silva', situacao: 'Em Andamento', solicitante: 'Empresa A', bairro: 'Centro', tipo_de_logradouro: 'Rua', logradouro: 'Principal', complemento: 'Sala 101', detalhamento: 'Detalhamento específico para o PO-001 sobre a instalação.', data_implantacao: '2024-01-20', funcionario_responsavel: 'Carlos P.', observacoes: 'Urgente', especificacoes: 'Padrão', e_mail: 'joao@empresa.com', tipo_de_solicitante: 'Cliente', data_enc_dro: '2024-02-01', link_do_po: 'http://link.com/po001', numero_de_controle: 'CTRL001', data_arquivamento: '2024-02-05', criado_em: new Date().toISOString(), ultima_edicao: new Date().toISOString() },
-  { numero_do_po: 'PO-002', data_po: '2024-02-20', analista: 'Maria Oliveira', situacao: 'Concluído', solicitante: 'Empresa B', bairro: 'Vila Nova', tipo_de_logradouro: 'Avenida', logradouro: 'Central', complemento: 'Andar 5', detalhamento: 'Detalhamento do PO-002: revisão de escopo concluída.', data_implantacao: '2024-02-25', funcionario_responsavel: 'Ana R.', observacoes: 'Revisado', especificacoes: 'Customizado', e_mail: 'maria@empresa.com', tipo_de_solicitante: 'Interno', data_enc_dro: '2024-03-10', link_do_po: 'http://link.com/po002', numero_de_controle: 'CTRL002', data_arquivamento: '2024-03-15', criado_em: new Date().toISOString(), ultima_edicao: new Date().toISOString() },
-  { numero_do_po: 'PO-003', data_po: '2023-12-10', analista: 'Pedro Costa', situacao: 'Pendente', solicitante: 'Empresa C', bairro: 'Jardins', tipo_de_logradouro: 'Praça', logradouro: 'Circular', complemento: 'Loja 3', detalhamento: 'PO-003: Aguardando aprovação do cliente.', data_implantacao: '2023-12-15', funcionario_responsavel: 'Sofia L.', observacoes: '', especificacoes: 'Básico', e_mail: 'pedro@empresa.com', tipo_de_solicitante: 'Parceiro', data_enc_dro: '2024-01-05', link_do_po: 'http://link.com/po003', numero_de_controle: 'CTRL003', data_arquivamento: '2024-01-10', criado_em: new Date().toISOString(), ultima_edicao: new Date().toISOString() }
-];
 
 export const MY_MOMENT_DATE_FORMATS = {
   parse: {
@@ -42,6 +41,7 @@ export const MY_MOMENT_DATE_FORMATS = {
     MatDatepickerModule,
     MatMomentDateModule,
     MatButtonModule,
+    MatSelectModule
   ],
   templateUrl: './po-form.component.html',
   styleUrls: ['./po-form.component.scss'],
@@ -54,52 +54,33 @@ export const MY_MOMENT_DATE_FORMATS = {
 export class PoFormComponent implements OnInit {
   poForm!: FormGroup;
   isEditMode = false;
+  poAtual: Po | null = null;
   currentPoNumero: string | null = null;
   pageTitle = 'Novo PO';
+  isLoading = false;
 
-  // Função para converter string YYYY-MM-DD para Date
-  private parseDateString(dateString: string | null | undefined): Date | null {
-    if (!dateString) return null;
-    const parts = dateString.split('-');
-    if (parts.length === 3) {
-      const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // Mês é 0-indexado em Date
-      const day = parseInt(parts[2], 10);
-      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-        return new Date(year, month, day);
-      }
-    }
-    return null; // Retorna null se a string não estiver no formato esperado
-  }
-
-  // Função para converter Date para string YYYY-MM-DD
-  private formatDateToString(date: Date | moment.Moment | null | undefined): string | null {
-    if (!date) return null;
-    if (moment.isMoment(date)) {
-      return date.format('YYYY-MM-DD');
-    }
-    if (date instanceof Date) {
-      const year = date.getFullYear();
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const day = date.getDate().toString().padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-    return null;
-  }
+  // Observables para os dropdowns
+  tiposLogradouro$!: Observable<string[]>;
+  analistas$!: Observable<string[]>;
+  funcionariosResponsaveis$!: Observable<string[]>;
+  situacoes$!: Observable<string[]>;
+  tiposDeSolicitante$!: Observable<string[]>;
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private googleSheetsService: GoogleSheetsService,
+    private poService: PoService
   ) { }
 
   ngOnInit(): void {
-    this.currentPoNumero = this.route.snapshot.paramMap.get('numero_do_po');
+    this.currentPoNumero = this.route.snapshot.paramMap.get('numero_po');
     this.isEditMode = !!this.currentPoNumero;
     this.pageTitle = this.isEditMode ? 'Alterar PO' : 'Adicionar PO';
 
     this.poForm = this.fb.group({
-      numero_do_po: [{value: '', disabled: this.isEditMode}, Validators.required], 
+      numero_po: [{value: '', disabled: this.isEditMode}, Validators.required, this.isEditMode ? null : this.validateNumeroPoNotTaken.bind(this)], 
       data_po: [null, Validators.required],
       tipo_de_logradouro: ['', Validators.required],
       logradouro: ['', Validators.required],
@@ -121,68 +102,179 @@ export class PoFormComponent implements OnInit {
       data_arquivamento: [null],
     });
 
+    // Carregar dados para os dropdowns
+    this.tiposLogradouro$ = this.googleSheetsService.getTiposLogradouro();
+    this.analistas$ = this.googleSheetsService.getAnalistas();
+    this.funcionariosResponsaveis$ = this.googleSheetsService.getFuncionariosResponsaveis();
+    this.situacoes$ = this.googleSheetsService.getSituacoes();
+    this.tiposDeSolicitante$ = this.googleSheetsService.getTiposDeSolicitante();
+
     if (this.isEditMode && this.currentPoNumero) {
-      const poToEdit = MOCK_POS_DATA.find(p => p.numero_do_po === this.currentPoNumero);
-      if (poToEdit) {
-        // Converter strings de data para objetos Date antes de patchValue
-        const poDataForForm = {
-          ...poToEdit,
-          data_po: this.parseDateString(poToEdit.data_po),
-          data_implantacao: this.parseDateString(poToEdit.data_implantacao),
-          data_enc_dro: this.parseDateString(poToEdit.data_enc_dro),
-          data_arquivamento: this.parseDateString(poToEdit.data_arquivamento),
-        };
-        this.poForm.patchValue(poDataForForm);
-      } else {
-        console.error('PO não encontrado para edição:', this.currentPoNumero);
-        this.router.navigate(['/lista-pos']);
-      }
+      this.loadPoData(this.currentPoNumero);
     }
   }
 
-  onSubmit(): void {
-    if (this.poForm.valid) {
-      const formData = this.poForm.getRawValue(); 
-      
-      // Converter datas do formulário (objetos Date/Moment) para string YYYY-MM-DD
-      const poDataParaSalvar: Po = {
-        ...(this.isEditMode && this.currentPoNumero ? { numero_do_po: this.currentPoNumero } : {}),
-        ...formData,
-        data_po: this.formatDateToString(formData.data_po),
-        data_implantacao: this.formatDateToString(formData.data_implantacao),
-        data_enc_dro: this.formatDateToString(formData.data_enc_dro),
-        data_arquivamento: this.formatDateToString(formData.data_arquivamento),
-        // criado_em e ultima_edicao são tratados separadamente abaixo
-      } as Po;
-
-      if (this.isEditMode) {
-        console.log('Atualizando PO:', poDataParaSalvar);
-        const index = MOCK_POS_DATA.findIndex(p => p.numero_do_po === this.currentPoNumero);
-        if (index !== -1) {
-          MOCK_POS_DATA[index] = { 
-            ...MOCK_POS_DATA[index], // Mantém campos não editáveis como criado_em
-            ...poDataParaSalvar, 
-            ultima_edicao: new Date().toISOString() 
-          };
-        }
+  loadPoData(numeroPo: string): void {
+    this.isLoading = true;
+    this.poService.getPo(numeroPo).then(po => {
+      if (po) {
+        this.poAtual = po; 
+        this.poForm.patchValue(this.poAtual);
+        this.patchDateFields(this.poAtual);
       } else {
-        poDataParaSalvar.criado_em = new Date().toISOString();
-        poDataParaSalvar.ultima_edicao = new Date().toISOString();
-        console.log('Criando Novo PO:', poDataParaSalvar);
-        MOCK_POS_DATA.push(poDataParaSalvar);
+        alert('PO não encontrado.');
+        this.router.navigate(['/lista-pos']);
       }
-      this.router.navigate(['/lista-pos']); 
-    } else {
+      this.isLoading = false;
+    }).catch(err => {
+      console.error('Erro ao carregar PO:', err);
+      alert('Erro ao carregar PO.');
+      this.isLoading = false;
+      this.router.navigate(['/lista-pos']);
+    });
+  }
+
+  private patchDateFields(po: Po): void {
+    const dateFields: (keyof Po)[] = ['data_po', 'data_implantacao', 'data_enc_dro', 'data_arquivamento'];
+    const patch: { [key: string]: any } = {};
+    dateFields.forEach(field => {
+      const value = po[field];
+      if (typeof value === 'string' && value) {
+        let date = this.parseYYYYMMDD(value) || this.parseDDMMYYYY(value);
+        if (date && !isNaN(date.getTime())) {
+          patch[field] = date; 
+        }
+      }
+    });
+    if (Object.keys(patch).length > 0) {
+      this.poForm.patchValue(patch);
+    }
+  }
+
+  private parseYYYYMMDD(dateString: string): Date | null {
+    const parts = dateString.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; 
+      const day = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      if (!isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+        return date;
+      }
+    }
+    return null;
+  }
+
+  private parseDDMMYYYY(dateString: string): Date | null {
+    const parts = dateString.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; 
+      const year = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      if (!isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+        return date;
+      }
+    }
+    return null;
+  }
+
+  onSubmit(): void {
+    if (this.poForm.invalid) {
       console.log('Formulário inválido');
       this.poForm.markAllAsTouched();
+      if (this.poForm.get('numero_po')?.hasError('numeroPoTaken')){
+        alert('Este Número de PO já existe. Por favor, escolha outro.');
+      }
+      return;
     }
+    this.isLoading = true;
+    const formValue = this.poForm.getRawValue(); 
+
+    const poDataParaSalvar: Partial<Po> = { ...formValue };
+
+    // Converter datas do formulário (que podem ser Date objects) para string YYYY-MM-DD
+    const dateFieldsToFormat: (keyof Po)[] = ['data_po', 'data_implantacao', 'data_enc_dro', 'data_arquivamento'];
+    for (const field of dateFieldsToFormat) {
+      const fieldValue = poDataParaSalvar[field];
+      // Check if fieldValue is an object and an instance of Date
+      if (typeof fieldValue === 'object' && fieldValue !== null && (fieldValue as any) instanceof Date) {
+        poDataParaSalvar[field] = this.formatDateToString(fieldValue as Date);
+      } else if (typeof fieldValue === 'string') {
+        // If it's already a string, assume it's in the correct format or doesn't need re-formatting by formatDateToString.
+        // formatDateToString expects a Date object.
+        poDataParaSalvar[field] = fieldValue;
+      }
+    }
+
+    const now = new Date().toISOString();
+
+    if (this.isEditMode && this.poAtual && this.poAtual.id) {
+      poDataParaSalvar.ultima_edicao = now;
+      this.poService.updatePo(this.poAtual.id, poDataParaSalvar).then(() => {
+        alert('PO atualizado com sucesso!');
+        this.router.navigate(['/lista-pos']);
+      }).catch(err => {
+        console.error('Erro ao atualizar PO:', err);
+        alert('Erro ao atualizar PO.');
+      }).finally(() => this.isLoading = false);
+    } else {
+      poDataParaSalvar.criado_em = now;
+      poDataParaSalvar.ultima_edicao = now;
+      this.poService.addPo(poDataParaSalvar as Po).then(() => {
+        alert('PO adicionado com sucesso!');
+        this.router.navigate(['/lista-pos']);
+      }).catch(err => {
+        console.error('Erro ao adicionar PO:', err);
+        alert('Erro ao adicionar PO.');
+      }).finally(() => this.isLoading = false);
+    }
+  }
+
+  formatDateToString(date: Date | string | null): string { // Return type changed to string
+    if (!date) return ''; // Return empty string for null
+    let d: Date | null = null;
+    if (typeof date === 'string') {
+      d = this.parseYYYYMMDD(date) || this.parseDDMMYYYY(date);
+      if (!d) return date; // Return original string if parsing fails (or '' if preferred)
+    } else if (date instanceof Date && !isNaN(date.getTime())) {
+      d = date;
+    }
+
+    if (d instanceof Date && !isNaN(d.getTime())) {
+        const year = d.getFullYear();
+        const month = ('0' + (d.getMonth() + 1)).slice(-2);
+        const day = ('0' + d.getDate()).slice(-2);
+        return `${year}-${month}-${day}`;
+    }
+    return ''; // Return empty string for invalid dates
+  }
+
+  // Validador assíncrono para numero_po
+  validateNumeroPoNotTaken(control: AbstractControl): Observable<ValidationErrors | null> {
+    if (!control.value) {
+      return of(null); 
+    }
+
+    return new Observable<ValidationErrors | null>(observer => {
+      this.poService.checkNumeroPoExists(control.value)
+        .then(isTaken => {
+          if (isTaken) {
+            observer.next({ numeroPoTaken: true });
+          } else {
+            observer.next(null);
+          }
+          observer.complete();
+        })
+        .catch(error => {
+          console.error('Erro na validação de numero_po:', error);
+          observer.next(null); 
+          observer.complete();
+        });
+    });
   }
 
   cancelar(): void {
     this.router.navigate(['/lista-pos']);
-  }
-
-  voltarParaLista(): void {
-    this.router.navigate(['/lista-pos']); 
   }
 }

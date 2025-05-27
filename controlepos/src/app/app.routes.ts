@@ -7,7 +7,7 @@ import { PoDetalhesComponent } from './componentes/po-detalhes/po-detalhes.compo
 export const routes: Routes = [
   { path: '', component: PoListaComponent }, 
   { path: 'novo-po', component: PoFormComponent }, 
-  { path: 'po/editar/:numero_do_po', component: PoFormComponent }, 
-  { path: 'po/detalhes/:numero_do_po', component: PoDetalhesComponent }, 
+  { path: 'po/editar/:numero_po', component: PoFormComponent }, 
+  { path: 'po/detalhes/:numero_po', component: PoDetalhesComponent }, 
   { path: 'lista-pos', component: PoListaComponent }
 ];

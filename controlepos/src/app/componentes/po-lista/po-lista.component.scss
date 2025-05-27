@@ -48,16 +48,14 @@ mat-card-header {
   gap: 8px; 
 }
 
-.action-icon-view {
-  color: #f0a61d; // Azul para o ícone de visualizar
-}
+/* Estilo para o botão Adicionar PO */
+button.mat-mdc-raised-button.action-button {
+  background-color: #dce9f3; /* Cor primária do tema indigo-pink (índigo) */
+  color: #3f51b5; /* Texto branco para o label do botão */
 
-.action-icon-edit {
-  color: green; // Verde para o ícone de editar
-}
-
-.action-icon-delete {
-  color: red; // Vermelho para o ícone de deletar
+  .mat-icon { /* Garante que o ícone também fique branco */
+    color: #3f51b5;
+  }
 }
 
 // O botão de deletar já usa color="warn", que geralmente é vermelho.
@@ -228,11 +226,26 @@ table {
   }
 }
 
-::ng-deep .filter-field .mat-form-field-wrapper {
-  padding-bottom: 0; 
+/* Estilos para os botões de ação na tabela */
+.action-button-details {
+  mat-icon {
+    color: #f0a61d; // Azul para detalhes
+  }
 }
 
-::ng-deep .filter-field .mat-form-field-infix {
-  padding-top: 0.5em; 
-  padding-bottom: 0.5em;
+.action-button-edit {
+  mat-icon {
+    color: green; // Amarelo/Laranja para editar
+  }
 }
+
+.action-button-delete {
+  mat-icon {
+    color: red; // Vermelho para excluir
+  }
+}
+
+
+/* .mat-mdc-form-field {
+  // Estilos para o campo de formulário
+} */ // Removido ou comentado para corrigir lint
