@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
-import { Firestore, collection, collectionData, doc, docData, setDoc, updateDoc, deleteDoc, query, where, getDocs, addDoc, orderBy, limit, startAfter, QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Injectable, inject, NgZone } from '@angular/core';
+import { DocumentData, Firestore, QueryDocumentSnapshot, collection, deleteDoc, doc, getDocs, limit, orderBy, query, setDoc, updateDoc, where, Query, startAfter as firestoreStartAfter, addDoc, collectionData } from '@angular/fire/firestore';
 import { Po } from '../modelos/po';
+import { from, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,14 +9,134 @@ import { Po } from '../modelos/po';
 export class PoService {
   private firestore: Firestore = inject(Firestore);
   private posCollection = collection(this.firestore, 'pos');
+  // Listar POs com paginação
+  async listar(
+    pageSize: number,
+    startAfter?: QueryDocumentSnapshot<DocumentData>,
+    orderByField: string = 'numero_po',
+    orderDirection: 'asc' | 'desc' = 'asc'
+  ): Promise<{ items: Po[], lastVisible: QueryDocumentSnapshot<DocumentData> | null }> {
+    try {
+      // Cria a query base
+      let q = query(
+        this.posCollection,
+        orderBy(orderByField, orderDirection),
+        limit(pageSize + 1) // Pegamos 1 a mais para saber se tem mais itens
+      ) as Query<DocumentData>;
 
-  constructor() { } 
+      // Adiciona o cursor de paginação se existir
+      if (startAfter) {
+        q = query(q, firestoreStartAfter(startAfter));
+      }
 
-  // Busca todos os POs
-  async getPos(): Promise<Po[]> {
-    const snapshot = await getDocs(this.posCollection);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Po));
+      // Executa a consulta
+      const querySnapshot = await getDocs(q);
+      const items: Po[] = [];
+      let lastVisible: QueryDocumentSnapshot<DocumentData> | null = null;
+      let index = 0;
+
+      // Processa os resultados
+      querySnapshot.forEach((doc) => {
+        if (index < pageSize) {
+          items.push({ id: doc.id, ...doc.data() } as Po);
+        }
+        // Atualiza o último documento visível
+        lastVisible = doc;
+        index++;
+      });
+
+      return { items, lastVisible };
+    } catch (error) {
+      console.error('Erro ao listar POs:', error);
+      throw error;
+    }
   }
+
+  // Incluir novo PO
+  async incluir(po: Po): Promise<void> {
+    await addDoc(this.posCollection, po);
+  }
+
+  // Atualizar PO existente (por id)
+  async atualizar(id: string, po: Partial<Po>): Promise<void> {
+    const docRef = doc(this.firestore, 'pos', id);
+    await updateDoc(docRef, po);
+  }
+
+  // Excluir PO por numero_po
+  async excluir(numero_po: string): Promise<void> {
+    const q = query(this.posCollection, where('numero_po', '==', numero_po));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) {
+      throw new Error(`PO com número ${numero_po} não encontrado para exclusão.`);
+    }
+    const docToDelete = snapshot.docs[0];
+    await deleteDoc(doc(this.firestore, 'pos', docToDelete.id));
+  }
+
+  // Filtra POs com base em um termo de busca e campo específico
+  async filtrar(termo: string, campo: string = 'numero_po'): Promise<Po[]> {
+    try {
+      console.log(`[PoService] Buscando por '${termo}' no campo '${campo}'`);
+      
+      // Converte o termo para minúsculas para busca case-insensitive
+      const termoBusca = termo.toLowerCase();
+      
+      // Cria uma referência à coleção
+      const posRef = collection(this.firestore, 'pos');
+      
+      // Primeiro, vamos buscar um documento para verificar a estrutura
+      const sampleQuery = query(posRef, limit(1));
+      const sampleSnapshot = await getDocs(sampleQuery);
+      
+      if (!sampleSnapshot.empty) {
+        const sampleDoc = sampleSnapshot.docs[0];
+        console.log('[PoService] Exemplo de documento encontrado:', {
+          id: sampleDoc.id,
+          data: sampleDoc.data(),
+          camposDisponiveis: Object.keys(sampleDoc.data())
+        });
+      }
+      
+      // Cria a consulta
+      let q = query(posRef);
+      
+      // Se houver um termo de busca, adiciona os filtros
+      if (termoBusca) {
+        console.log(`[PoService] Aplicando filtro: ${campo} >= '${termoBusca}' AND ${campo} <= '${termoBusca}\uf8ff'`);
+        q = query(
+          posRef,
+          where(campo, '>=', termoBusca),
+          where(campo, '<=', termoBusca + '\uf8ff'),
+          orderBy(campo)  // Adiciona ordenação pelo campo de busca
+        );
+      }
+      
+      console.log('[PoService] Query criada:', q);
+      const querySnapshot = await getDocs(q);
+      console.log('[PoService] Query executada, documentos encontrados:', querySnapshot.size);
+      
+      const items: Po[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        console.log('[PoService] Documento encontrado:', doc.id, data);
+        items.push({ 
+          id: doc.id, 
+          ...data,
+          // Garante que os campos de data sejam convertidos corretamente
+          data_po: data['data_po']?.toDate ? data['data_po'].toDate() : data['data_po']
+        } as Po);
+      });
+      
+      console.log(`[PoService] Total de itens retornados: ${items.length}`);
+      return items;
+    } catch (error) {
+      console.error('[PoService] Erro ao filtrar POs:', error);
+      throw error;
+    }
+  }
+
 
   // Busca um PO específico pelo seu numero_po
   async getPo(numeroPo: string): Promise<Po | undefined> {
@@ -81,32 +201,31 @@ export class PoService {
     return !querySnapshot.empty;
   }
 
-  // Novo método para buscar POs com paginação
-  async getPosPaginated( 
-    pageSize: number, 
-    startAfterSnapshot?: QueryDocumentSnapshot<DocumentData> 
-  ): Promise<{ data: Po[], lastVisibleDoc: QueryDocumentSnapshot<DocumentData> | null }> {
-    
-    let q = query(
-      this.posCollection, 
-      orderBy('numero_po'), // Ordenar por numero_po (ou outro campo apropriado)
-      limit(pageSize)
-    );
-
-    if (startAfterSnapshot) {
-      q = query(
-        this.posCollection, 
-        orderBy('numero_po'), 
-        startAfter(startAfterSnapshot),
-        limit(pageSize)
-      );
-    }
-
-    const querySnapshot = await getDocs(q);
-    
-    const data = querySnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Po));
-    const lastVisibleDoc = querySnapshot.docs.length > 0 ? querySnapshot.docs[querySnapshot.docs.length - 1] : null;
-
-    return { data, lastVisibleDoc };
+  // Método para buscar POs com paginação usando Observable
+  getPosPaginated(
+    pageSize: number,
+    queryOptions: {
+      startAfterDoc?: QueryDocumentSnapshot<DocumentData>,
+      filterField?: string,
+      filterValue?: string,
+      orderByField?: string,
+      orderByDirection?: 'asc' | 'desc'
+    } = {}
+  ): Observable<{
+    data: Po[],
+    lastVisibleDocFromQuery: QueryDocumentSnapshot<DocumentData> | null
+  }> {
+    return from(this.listar(
+      pageSize,
+      queryOptions.startAfterDoc,
+      queryOptions.orderByField,
+      queryOptions.orderByDirection
+    ).then(({ items, lastVisible }) => ({
+      data: items,
+      lastVisibleDocFromQuery: lastVisible
+    })));
   }
+
+
+
 }

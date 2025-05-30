@@ -4,8 +4,8 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Número da PO</mat-label>
-      <input matInput formControlName="numero_do_po" placeholder="Ex: PO-12345">
-      <mat-error *ngIf="poForm.get('numero_do_po')?.hasError('required')">
+      <input matInput formControlName="numero_po" placeholder="Ex: PO-12345">
+      <mat-error *ngIf="poForm.get('numero_po')?.hasError('required')">
         Número da PO é obrigatório.
       </mat-error>
     </mat-form-field>
