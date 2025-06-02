@@ -33,12 +33,16 @@ mat-card.po-list-card {
     flex-shrink: 0;
     
     .header-actions {
-      width: 98%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #dce9f3;
-      color: #3f51b5;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;    
+      width: 100%;
+      background-color: #dce9f3; // Cor de fundo original restaurada
+      color: #3f51b5;           // Cor do texto original restaurada
+      text-align: center;
+      // margin-bottom: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.12); // Mantém borda estilo Material outline
+      border-radius: 4px;        // Mantém raio da borda padrão Material
+      box-sizing: border-box;    // Mantém box-sizing
     }
   }
 
@@ -401,27 +405,6 @@ button.mat-mdc-raised-button.action-button {
   border: none !important;
 }
 
-
-/* Estilo do card principal */
-mat-card.po-list-card {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  box-sizing: border-box;
-  overflow: hidden;
-
-  /* Sobrescrevendo estilos do mat-card-content */
-  .mat-mdc-card-content {
-    flex: 1;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-}
 
 /* Container principal da tabela */
 .table-container {
