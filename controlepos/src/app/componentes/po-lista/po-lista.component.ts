@@ -1,15 +1,15 @@
-import { Component, ViewChild, Output, EventEmitter, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, Output, EventEmitter, AfterViewInit, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PoService } from '../../services/po.service';
 import { Po } from '../../modelos/po';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
-interface Planilha {
-  nome: string;
-  dados: any[]; // Substitua 'any' pelo tipo correto se souber
-}   
+// Interface Planilha e array planilhas não são mais necessários com a abordagem de rota
+// interface Planilha {
+//   dados: any[]; 
+// }   
 
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
@@ -44,7 +44,7 @@ import { FormsModule } from '@angular/forms';
     MatTooltipModule
   ]
 })
-export class PoListaComponent implements AfterViewInit {
+export class PoListaComponent implements OnInit, AfterViewInit {
   isLoading: boolean = false;
   selectedRow: Po | null = null; // Para rastrear a linha selecionada
   pos: Po[] = [];
@@ -53,7 +53,12 @@ export class PoListaComponent implements AfterViewInit {
   visualizarPo(po: Po) {
     // Navegar para a rota de visualização, usando o numero_po como identificador
     // Certifique-se de que a rota '/pos/visualizar/:id' esteja configurada no seu roteamento
-    this.router.navigate(['/po/detalhes', po.numero_po]);
+    if (!this.currentSheetName) {
+      console.error('SheetName não definido ao tentar visualizar PO. Não é possível navegar.');
+      // Adicionar algum feedback ao usuário, se apropriado
+      return;
+    }
+    this.router.navigate(['/po/detalhes', this.currentSheetName, po.numero_po]);
     // Ou, se você tiver um campo 'id' único:
     // this.router.navigate(['/pos/visualizar', po.id]);
   }
@@ -71,7 +76,12 @@ export class PoListaComponent implements AfterViewInit {
     if (confirm(`Tem certeza que deseja excluir o PO: ${po.numero_po}?`)) {
       // Supondo que PoService.excluir retorne um Observable
       // TODO: Verificar/implementar PoService.excluir se ainda não existir
-      this.poService.excluir(po.numero_po).subscribe({
+      if (!this.currentSheetName) {
+        console.error("Nome da aba atual não definido para exclusão.");
+        // Adicionar feedback de erro para o usuário
+        return;
+      }
+      this.poService.excluir(po.numero_po, this.currentSheetName).subscribe({
         next: () => {
           // Atualizar a lista após a exclusão
           this.pos = this.pos.filter(p => p.numero_po !== po.numero_po);
@@ -130,7 +140,6 @@ export class PoListaComponent implements AfterViewInit {
     'solicitante',
     'tipo_solicitante',
     'data_enc_dro',
-    'link_po',
     'numero_controle',
     'data_arquivamento',
     'acoes' // Adicionar coluna de ações
@@ -141,24 +150,53 @@ export class PoListaComponent implements AfterViewInit {
   filtro2: string = '';
   filtro3: string = '';
   filtro4: string = '';
-  planilhaAtual: number = 1;
-  planilhas: Planilha[] = [
-    { nome: 'Oeste', dados: [] },
-    { nome: 'Barreiro', dados: [] }
-  ];
+  // planilhaAtual e planilhas não são mais necessários com a abordagem de rota
+  // planilhaAtual: number = 1;
+  // planilhas: Planilha[] = [
+  //   { nome: 'Oeste', dados: [] },
+  //   { nome: 'Barreiro', dados: [] }
+  // ];
+  currentSheetName: string = ''; // Para armazenar o nome da aba atual
   idDaPlanilha = '1AQjzxBPFKxwfAGolCxvzOEcQBs5Z-0yKUKIxsjDXdAI';
 
-  constructor(private poService: PoService, private http: HttpClient, private router: Router) {}
+  constructor(
+    private poService: PoService, 
+    private http: HttpClient, 
+    private router: Router,
+    private route: ActivatedRoute // Injete ActivatedRoute
+  ) {}
 
   ngOnInit() {
     this.isLoading = true;
-    this.poService.listar().subscribe(pos => {
+    this.route.paramMap.subscribe(params => {
+      const sheetNameParam = params.get('sheetName');
+      if (sheetNameParam) {
+        this.currentSheetName = sheetNameParam;
+        // Se desejar um nome padrão caso nenhum seja fornecido (embora a rota agora exija)
+        // this.currentSheetName = sheetNameParam || 'Oeste'; 
+        this.loadDataForSheet();
+      } else {
+        // Tratar caso onde sheetName não está presente, talvez redirecionar ou carregar um padrão
+        console.error('SheetName não encontrado nos parâmetros da rota!');
+        this.currentSheetName = 'Oeste'; // Fallback para Oeste ou outra lógica
+        this.loadDataForSheet(); // Ou mostrar uma mensagem de erro
+        // this.router.navigate(['/menu']); // Exemplo de redirecionamento
+      }
+    });
+  }
+
+  loadDataForSheet() {
+    if (!this.currentSheetName) return;
+    this.isLoading = true;
+    this.poService.listar(this.currentSheetName, this.filtro).subscribe(pos => {
       this.pos = pos;
       this.dataSource.data = pos;
       this.totalItems = pos.length;
       this.isLoading = false;
     }, _ => {
       this.isLoading = false;
+      // Adicionar tratamento de erro mais robusto aqui
+      console.error(`Erro ao carregar dados para a aba: ${this.currentSheetName}`);
     });
   }
 
@@ -170,12 +208,15 @@ export class PoListaComponent implements AfterViewInit {
     }
   }
 
-  alternarPlanilha(num: number) {
-    this.planilhaAtual = num;
-    this.dataSource.data = this.planilhas[num - 1].dados;
-    this.totalItems = this.dataSource.data.length;
-    this.aplicarFiltro();
+  // O método alternarPlanilha não é mais necessário, a navegação via rota cuidará disso.
+  // Se precisar recarregar dados ou mudar filtros com base em botões na mesma página,
+  // esses botões deverão usar routerLink para navegar para a rota da outra aba.
+  // Ex: [routerLink]="['/lista-pos', 'Barreiro']" e [routerLink]="['/lista-pos', 'Oeste']"
+  /*
+  alternarPlanilha(sheetName: string) {
+    this.router.navigate(['/lista-pos', sheetName]);
   }
+  */
 
   onPageChange(event: PageEvent) {
     this.pageSize = event.pageSize;
@@ -186,12 +227,17 @@ export class PoListaComponent implements AfterViewInit {
   }
 
   aplicarFiltro() {
+    // Ao aplicar filtro, usamos o currentSheetName já definido
     this.buscarNaGoogleSheets(this.filtro);
   }
 
   buscarNaGoogleSheets(filtroPrincipal: string) {
+    if (!this.currentSheetName) {
+      console.error("Nome da aba atual não definido para busca.");
+      return;
+    }
     this.isLoading = true;
-    this.poService.listar(filtroPrincipal).subscribe(
+    this.poService.listar(this.currentSheetName, filtroPrincipal).subscribe(
       pos => {
         let dadosFiltrados = pos;
 

@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PdfService, PdfFile } from '../../services/pdf.service'; // Ajuste o caminho se o serviço estiver em outro local
@@ -27,6 +28,7 @@ import { MatPaginator } from '@angular/material/paginator';
     MatIconModule,
     MatButtonModule,
     MatProgressBarModule
+    // RouterOutlet, RouterLink // Se for usar routerLink no template, adicione RouterLink aqui e importe de @angular/router
   ],
   templateUrl: './pdf-list.component.html',
   styleUrls: ['./pdf-list.component.scss'] 
@@ -41,7 +43,7 @@ export class PdfListComponent implements OnInit, AfterViewInit {
   errorMessage = '';
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  constructor(private pdfService: PdfService) { }
+  constructor(private pdfService: PdfService, private router: Router) { }
 
   ngOnInit(): void {
     this.loading = true;
@@ -52,7 +54,7 @@ export class PdfListComponent implements OnInit, AfterViewInit {
         this.searchTerm2 = '';
         this.searchTerm3 = '';
         this.filterPdfFiles();
-        // this.dataSource.paginator = this.paginator; // Movido para ngAfterViewInit
+        this.dataSource.paginator = this.paginator;
         this.loading = false;
       },
       (error) => {
@@ -76,8 +78,10 @@ export class PdfListComponent implements OnInit, AfterViewInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
-    // LOG para depuração:
-    console.log('all:', this.allPdfFiles.length, 'filtered:', this.dataSource.data.length, 'term1:', this.searchTerm, 'term2:', this.searchTerm2, 'term3:', this.searchTerm3);
+  }
+
+  navegarParaMenu(): void {
+    this.router.navigate(['/menu']); // Ajuste a rota conforme necessário
   }
 
   ngAfterViewInit() {

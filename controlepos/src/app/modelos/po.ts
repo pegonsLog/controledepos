@@ -16,7 +16,6 @@ export interface Po {
   solicitante: string;
   tipo_solicitante: string;
   data_enc_dro: string;
-  link_po: string;
   numero_controle: string;
   data_arquivamento: string;
 }

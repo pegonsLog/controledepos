@@ -77,7 +77,6 @@ export class PoFormComponent implements OnInit {
       solicitante: ['', Validators.required],
       tipo_solicitante: ['', Validators.required],
       data_enc_dro: ['', Validators.required],
-      link_po: [''],
       numero_controle: [''],
       data_arquivamento: ['', Validators.required],
     });

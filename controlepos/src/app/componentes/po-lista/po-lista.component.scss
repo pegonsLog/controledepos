@@ -127,6 +127,28 @@ mat-card.po-list-card {
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 200px;
+        vertical-align: top; // Alinha o conteúdo da célula ao topo
+      } // Fim dos estilos gerais para .mat-mdc-cell
+
+      // General style for Logradouro column (header and data cells)
+      .mat-column-logradouro {
+        width: 250px;
+        min-width: 250px; // Prevent shrinking below 250px
+        flex: 0 0 250px;  // Flex property: grow=0, shrink=0, basis=250px
+        // Ensure text can wrap and break if needed
+        // These are often better on the cell content itself or a child div
+        // white-space: normal; 
+        // word-break: break-word;
+      }
+
+      // Sobrescrita específica para as células da coluna Logradouro
+      .mat-column-logradouro.mat-mdc-cell {
+        white-space: normal;    // Permite a quebra de linha do texto
+        overflow: visible;      // Exibe o conteúdo que transborda (se houver)
+        text-overflow: clip;    // Remove o "..." (reticências)
+        max-width: none;        // Remove a restrição de largura máxima
+        /* Opcional: para melhor quebra de palavras muito longas sem espaços */
+        /* overflow-wrap: break-word; */
       }
       
       .mat-mdc-row {

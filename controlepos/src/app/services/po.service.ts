@@ -11,12 +11,12 @@ export class PoService {
 
   constructor(private googleSheetsService: GoogleSheetsService) {}
 
-  listar(filtro: string = ''): Observable<Po[]> {
+  listar(sheetName: string, filtro: string = ''): Observable<Po[]> {
     // Aqui você pode adaptar para buscar de uma aba específica, se necessário
     // Exemplo: return this.googleSheetsService.getSheetData('Oeste!A:Z')
     // e mapear para Po[]
     // Supondo que haja um método público para buscar dados brutos; caso contrário, altere getSheetData para public
-    return this.googleSheetsService.getSheetData('Oeste!A:Z').pipe(
+    return this.googleSheetsService.getSheetData(`${sheetName}!A:Z`).pipe(
       // Adaptar o mapeamento conforme o formato dos dados retornados
       // Supondo que a primeira linha seja o cabeçalho
       map((dados: any[]) => {
@@ -45,11 +45,11 @@ export class PoService {
   // Métodos para adicionar/atualizar POs podem ser implementados aqui caso você exponha um endpoint customizado
   // ou use um App Script no Google Sheets. Caso contrário, a API pública só permite leitura.
 
-  excluir(numero_po: string): Observable<any> {
+  excluir(numero_po: string, sheetName: string): Observable<any> {
     // TODO: Implementar o método 'deleteSheetDataByPoNumber' no GoogleSheetsService.
     // Este método no GoogleSheetsService deverá chamar o App Script para excluir a linha.
     // O App Script precisará localizar a linha pelo numero_po e então deletá-la.
     // O range 'Oeste!A:Z' é um exemplo, ajuste conforme necessário.
-    return this.googleSheetsService.deleteSheetDataByPoNumber(numero_po, 'Oeste!A:Z');
+    return this.googleSheetsService.deleteSheetDataByPoNumber(numero_po, sheetName);
   }
 }

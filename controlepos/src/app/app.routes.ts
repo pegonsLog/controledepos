@@ -10,8 +10,8 @@ export const routes: Routes = [
   // { path: '', component: PoListaComponent }, 
   { path: 'novo-po', component: PoFormComponent }, 
   { path: 'po/editar/:numero_po', component: PoFormComponent }, 
-  { path: 'po/detalhes/:numero_po', component: PoDetalhesComponent }, 
-  { path: 'lista-pos', component: PoListaComponent },
+  { path: 'po/detalhes/:sheetName/:numero_po', component: PoDetalhesComponent }, 
+  { path: 'lista-pos/:sheetName', component: PoListaComponent },
   { path: 'pdfs', component: PdfListComponent },
   { path: 'menu', component: MenuComponent },
   { path: '', component: MenuComponent }

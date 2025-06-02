@@ -71,3 +71,24 @@
     border-radius: 4px;        // Mantém raio da borda padrão Material
     box-sizing: border-box;    // Mantém box-sizing
   }
+
+  /* Estilo para o botão Adicionar PO */
+button.mat-mdc-raised-button.action-button {
+  background-color: #dce9f3; /* Cor primária do tema indigo-pink (índigo) */
+  color: #3f51b5; /* Texto branco para o label do botão */
+  margin: 0px 20px 0 0; /* Adiciona margem à esquerda do botão */
+  height: 52px;
+  width: 200px;
+  font-size: 16px;
+
+  .mat-icon { /* Garante que o ícone também fique branco */
+    color: #3f51b5;
+  }
+}
+
+.position-button {
+  width: 100%;
+  display: flex;
+  justify-content:right;
+}
+  
