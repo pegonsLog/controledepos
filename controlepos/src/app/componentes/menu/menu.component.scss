@@ -1,0 +1,17 @@
+.menu-container {
+    display: flex;
+    flex-direction: column; // Empilha os botões verticalmente
+    justify-content: center; // Centraliza verticalmente na viewport
+    align-items: center; // Centraliza horizontalmente na viewport
+    min-height: 100vh; // Faz o container ocupar toda a altura da viewport
+    width: 100%;
+  
+    button {
+      margin-bottom: 16px; // Espaçamento entre os botões
+      min-width: 200px; // Largura mínima para os botões
+    }
+  
+    button:last-child {
+      margin-bottom: 0; // Remove a margem do último botão
+    }
+  }

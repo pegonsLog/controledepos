@@ -1,58 +1,122 @@
-import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
-
-// Angular Material
-import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatOptionModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
+import { Component, ViewChild, Output, EventEmitter, AfterViewInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { PoService } from '../../services/po.service';
+import { Po } from '../../modelos/po';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatSortModule, Sort } from '@angular/material/sort';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { Router } from '@angular/router';
+
+interface Planilha {
+  nome: string;
+  dados: any[]; // Substitua 'any' pelo tipo correto se souber
+}   
+
+import { MatCardModule } from '@angular/material/card';
+import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
-import { PageEvent } from '@angular/material/paginator';
-
-// RxJS
-
-// Componentes e serviços
-
-// Usando a interface Po do modelo
-
+import { MatSortModule } from '@angular/material/sort';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-po-lista',
+  templateUrl: './po-lista.component.html',
+  styleUrls: ['./po-lista.component.scss'],
   standalone: true,
   imports: [
     CommonModule,
+    MatCardModule,
     MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
     MatFormFieldModule,
     MatInputModule,
-    MatIconModule,
-    MatButtonModule,
-    MatCardModule,
-    MatPaginatorModule,
-    MatSortModule,
-    MatProgressSpinnerModule,
-    MatMenuModule,
     FormsModule,
-    MatSelectModule,
-    MatOptionModule
-  ],
-  templateUrl: './po-lista.component.html',
-  styleUrls: ['./po-lista.component.scss']
+    MatTooltipModule
+  ]
 })
+export class PoListaComponent implements AfterViewInit {
+  isLoading: boolean = false;
+  selectedRow: Po | null = null; // Para rastrear a linha selecionada
+  pos: Po[] = [];
+  @Output() selecionarPo = new EventEmitter<string>();
 
-export class PoListaComponent {
-  displayedColumns: string[] = [
+  visualizarPo(po: Po) {
+    // Navegar para a rota de visualização, usando o numero_po como identificador
+    // Certifique-se de que a rota '/pos/visualizar/:id' esteja configurada no seu roteamento
+    this.router.navigate(['/po/detalhes', po.numero_po]);
+    // Ou, se você tiver um campo 'id' único:
+    // this.router.navigate(['/pos/visualizar', po.id]);
+  }
+
+  alterarPo(po: Po) {
+    // Navegar para a rota de edição, usando o numero_po como identificador
+    // Certifique-se de que a rota '/pos/editar/:id' esteja configurada no seu roteamento
+    this.router.navigate(['/po/editar', po.numero_po]); 
+    // Ou, se você tiver um campo 'id' único:
+    // this.router.navigate(['/pos/editar', po.id]);
+  }
+
+  deletarPo(po: Po) {
+    // Adicionar uma confirmação antes de excluir
+    if (confirm(`Tem certeza que deseja excluir o PO: ${po.numero_po}?`)) {
+      // Supondo que PoService.excluir retorne um Observable
+      // TODO: Verificar/implementar PoService.excluir se ainda não existir
+      this.poService.excluir(po.numero_po).subscribe({
+        next: () => {
+          // Atualizar a lista após a exclusão
+          this.pos = this.pos.filter(p => p.numero_po !== po.numero_po);
+          this.dataSource.data = this.pos; // Atualiza o dataSource
+          this.totalItems = this.pos.length;
+          // Adicionar feedback para o usuário (ex: snackbar)
+          console.log('PO excluído com sucesso:', po.numero_po);
+          // Se estiver usando paginação e filtros do lado do servidor, pode ser necessário recarregar os dados
+          // this.aplicarFiltro(); 
+        },
+        error: (err: unknown) => {
+          console.error('Erro ao excluir PO:', err);
+          // Adicionar feedback de erro para o usuário
+        }
+      });
+    }
+  }
+
+  onSortChange(event: any): void {
+    // Implemente aqui a lógica de ordenação conforme necessário
+  }
+
+  navegarParaMenu() {
+    this.router.navigate(['/menu']);
+  }
+
+  private _actualPaginator!: MatPaginator;
+
+  @ViewChild(MatPaginator)
+  set paginator(paginator: MatPaginator) {
+    this._actualPaginator = paginator;
+    if (this.dataSource) { // dataSource é inicializado como propriedade da classe
+      this.dataSource.paginator = this._actualPaginator;
+    } else {
+      // Este caso não deve ocorrer se dataSource é inicializado na declaração da propriedade
+    }
+  }
+
+  totalItems: number = 0;
+  pageSize: number = 5;
+
+  displayedColumns = [
     'numero_po',
     'data_po',
-    'tipo_de_logradouro',
+    'tipo_logradouro',
     'logradouro',
     'complemento',
     'analista',
@@ -62,49 +126,120 @@ export class PoListaComponent {
     'observacoes',
     'detalhamento',
     'especificacoes',
-    'e_mail',
     'situacao',
     'solicitante',
-    'tipo_de_solicitante',
+    'tipo_solicitante',
     'data_enc_dro',
-    'link_do_po',
-    'numero_de_controle',
+    'link_po',
+    'numero_controle',
     'data_arquivamento',
-    'criado_em',
-    'ultima_edicao',
-    'acoes'
+    'acoes' // Adicionar coluna de ações
   ];
-  isLoading = false;
+
   dataSource = new MatTableDataSource<any>([]);
+  filtro: string = '';
+  filtro2: string = '';
+  filtro3: string = '';
+  filtro4: string = '';
+  planilhaAtual: number = 1;
+  planilhas: Planilha[] = [
+    { nome: 'Oeste', dados: [] },
+    { nome: 'Barreiro', dados: [] }
+  ];
+  idDaPlanilha = '1AQjzxBPFKxwfAGolCxvzOEcQBs5Z-0yKUKIxsjDXdAI';
 
-  totalItems: number = 0;
-  pageSize: number = 10;
+  constructor(private poService: PoService, private http: HttpClient, private router: Router) {}
 
-
-  onSortChange(event: Sort): void {
-    // Implemente a lógica de ordenação se necessário
-    // Por enquanto, apenas evita erro de template
-    console.log('Ordenação:', event);
+  ngOnInit() {
+    this.isLoading = true;
+    this.poService.listar().subscribe(pos => {
+      this.pos = pos;
+      this.dataSource.data = pos;
+      this.totalItems = pos.length;
+      this.isLoading = false;
+    }, _ => {
+      this.isLoading = false;
+    });
   }
 
-  navegarParaNovoPo(): void {
-    // Implemente a navegação para adicionar novo PO
-    // Por enquanto, apenas evita erro de template
-    console.log('Navegar para novo PO');
+  ngAfterViewInit() {
+    // O setter do paginator deve cuidar da atribuição.
+    // Se for necessário um fallback, pode ser adicionado aqui, mas idealmente o setter é suficiente.
+    if (this._actualPaginator && !this.dataSource.paginator) {
+       this.dataSource.paginator = this._actualPaginator;
+    }
   }
 
-  atualizar(po: any): void {
-    console.log('Atualizar PO:', po);
-    // Implemente aqui a lógica para atualizar o PO
+  alternarPlanilha(num: number) {
+    this.planilhaAtual = num;
+    this.dataSource.data = this.planilhas[num - 1].dados;
+    this.totalItems = this.dataSource.data.length;
+    this.aplicarFiltro();
   }
 
-  excluir(po: any): void {
-    console.log('Excluir PO:', po);
-    // Implemente aqui a lógica para excluir o PO
+  onPageChange(event: PageEvent) {
+    this.pageSize = event.pageSize;
+    // A lógica de paginação é gerenciada automaticamente pelo MatTableDataSource
+    // quando seu paginator está corretamente vinculado.
+    // Se precisar de lógica adicional ao mudar de página (ex: buscar dados do servidor para a nova página),
+    // ela seria implementada aqui.
   }
 
-  onPageChange(event: PageEvent): void {
-    console.log('Mudança de página:', event);
-    // Implemente aqui a lógica para lidar com a troca de página
+  aplicarFiltro() {
+    this.buscarNaGoogleSheets(this.filtro);
+  }
+
+  buscarNaGoogleSheets(filtroPrincipal: string) {
+    this.isLoading = true;
+    this.poService.listar(filtroPrincipal).subscribe(
+      pos => {
+        let dadosFiltrados = pos;
+
+        // Aplicar filtros adicionais sequencialmente
+        if (this.filtro2) {
+          dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro2));
+        }
+        if (this.filtro3) {
+          dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro3));
+        }
+        if (this.filtro4) {
+          dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro4));
+        }
+
+        this.dataSource.data = dadosFiltrados;
+        this.totalItems = dadosFiltrados.length;
+        this.isLoading = false;
+      },
+      _ => {
+        this.isLoading = false;
+      }
+    );
+  }
+
+  // Método auxiliar para verificar se algum campo do item contém o termo
+  itemContemTermo(item: any, termo: string): boolean {
+    if (!termo) return true; // Se o termo do filtro adicional for vazio, não filtra
+    const termoLower = termo.toLowerCase();
+    for (const key in item) {
+      if (Object.prototype.hasOwnProperty.call(item, key) && item[key] != null) { // Checa se item[key] não é null ou undefined
+        if (String(item[key]).toLowerCase().includes(termoLower)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // Método para verificar se uma linha está selecionada
+  isSelected(row: any): boolean {
+    return this.selectedRow === row;
+  }
+
+  // Método para selecionar uma linha
+  selecionarLinha(row: Po): void {
+    this.selectedRow = this.selectedRow === row ? null : row;
+    if (this.selectedRow) {
+      this.selecionarPo.emit(this.selectedRow.numero_po);
+    }
   }
 }

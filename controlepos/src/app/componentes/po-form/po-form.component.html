@@ -22,12 +22,12 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Tipo de Logradouro</mat-label>
-      <mat-select formControlName="tipo_de_logradouro">
+      <mat-select formControlName="tipo_logradouro">
         <mat-option *ngFor="let tipo of tiposLogradouro$ | async" [value]="tipo">
           {{ tipo }}
         </mat-option>
       </mat-select>
-      <mat-error *ngIf="poForm.get('tipo_de_logradouro')?.hasError('required')">
+      <mat-error *ngIf="poForm.get('tipo_logradouro')?.hasError('required')">
         Tipo de logradouro é obrigatório.
       </mat-error>
     </mat-form-field>
@@ -101,18 +101,6 @@
       <mat-label>Especificações</mat-label>
       <textarea matInput formControlName="especificacoes" placeholder="Requisitos técnicos..."></textarea>
     </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>E-mail</mat-label>
-      <input matInput formControlName="e_mail" placeholder="Ex: contato@email.com" type="email">
-      <mat-error *ngIf="poForm.get('e_mail')?.hasError('required')">
-        E-mail é obrigatório.
-      </mat-error>
-      <mat-error *ngIf="poForm.get('e_mail')?.hasError('email')">
-        Formato de e-mail inválido.
-      </mat-error>
-    </mat-form-field>
-
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Situação</mat-label>
       <mat-select formControlName="situacao">
@@ -135,12 +123,12 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Tipo de Solicitante</mat-label>
-      <mat-select formControlName="tipo_de_solicitante">
+      <mat-select formControlName="tipo_solicitante">
         <mat-option *ngFor="let tipo of tiposDeSolicitante$ | async" [value]="tipo">
           {{ tipo }}
         </mat-option>
       </mat-select>
-      <mat-error *ngIf="poForm.get('tipo_de_solicitante')?.hasError('required')">
+      <mat-error *ngIf="poForm.get('tipo_solicitante')?.hasError('required')">
         Tipo de solicitante é obrigatório.
       </mat-error>
     </mat-form-field>
@@ -153,13 +141,13 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Link da PO</mat-label>
-      <input matInput formControlName="link_do_po" placeholder="URL para a PO">
+      <mat-label>Link do PO</mat-label>
+      <input matInput formControlName="link_po" placeholder="URL para a PO">
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Número de Controle</mat-label>
-      <input matInput formControlName="numero_de_controle" placeholder="Ex: CTRL-001">
+      <input matInput formControlName="numero_controle" placeholder="Ex: CTRL-001">
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">

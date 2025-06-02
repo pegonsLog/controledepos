@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Po } from '../../modelos/po';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { PoService } from '../../services/po.service';
+import { Po } from '../../modelos/po';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,52 +21,24 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrls: ['./po-detalhes.component.scss']
 })
 export class PoDetalhesComponent implements OnInit {
-  po: Po | undefined;
+  @Input() numeroPo: string = '';
+  @Output() voltar = new EventEmitter<void>();
+  po: Po | null = null;
   isLoading = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private poService: PoService,
-    private router: Router
-  ) {}
+  constructor(private poService: PoService) {}
 
-  ngOnInit(): void {
-    const numeroPoParam = this.route.snapshot.paramMap.get('numero_po');
-    if (numeroPoParam) {
-      this.carregarPo(numeroPoParam);
-    } else {
-      console.error('Número do PO não fornecido na rota.');
-      this.router.navigate(['/lista-pos']);
+  ngOnInit() {
+    if (this.numeroPo) {
+      this.isLoading = true;
+      this.poService.listar().subscribe(pos => {
+        this.po = pos.find(p => p.numero_po === this.numeroPo) || null;
+        this.isLoading = false;
+      });
     }
   }
 
-  async carregarPo(numeroPo: string): Promise<void> {
-    this.isLoading = true;
-    try {
-      const poEncontrado = await this.poService.getPo(numeroPo);
-      if (poEncontrado) {
-        this.po = poEncontrado;
-      } else {
-        console.warn(`PO com número ${numeroPo} não encontrado.`);
-        this.router.navigate(['/lista-pos']);
-      }
-    } catch (error) {
-      console.error(`Erro ao carregar PO ${numeroPo}:`, error);
-      this.router.navigate(['/lista-pos']);
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  voltarParaLista(): void {
-    this.router.navigate(['/lista-pos']);
-  }
-
-  editarPo(): void {
-    if (this.po && this.po.numero_po) {
-      this.router.navigate(['/po/editar', this.po.numero_po]);
-    } else {
-      console.error('Não é possível editar: número do PO não definido.');
-    }
+  voltarParaLista() {
+    this.voltar.emit();
   }
 }

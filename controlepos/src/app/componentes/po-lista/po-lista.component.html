@@ -1,134 +1,210 @@
 <mat-card class="po-list-card">
-  <mat-card-content>
-    <div class="header-grid" style="margin-bottom: 0px;">
-
-
-
-      <div class="action-buttons-group" style="padding-bottom: 18px;">
-        <button mat-raised-button (click)="navegarParaNovoPo()" class="action-button">
-          <mat-icon>add</mat-icon>
-          Adicionar PO
-        </button>
-      </div>
+  <mat-card-header>
+    <div class="header-actions">
+      <h2>CONSULTA DE POS</h2>
     </div>
+  </mat-card-header>
 
+  <mat-card-content>
+    <div class="filter-container">
+      <div class="filter-inputs-wrapper"> <!-- Nova div para agrupar os filtros -->
+        <mat-form-field appearance="outline" class="filter-field filter-item">
+          <mat-label>Filtro 1</mat-label>
+          <input matInput type="text" placeholder="Digite para filtrar..." [(ngModel)]="filtro"
+            (ngModelChange)="aplicarFiltro()" />
+          <button *ngIf="filtro" matSuffix mat-icon-button aria-label="Limpar" (click)="filtro=''; aplicarFiltro();">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+  
+        <mat-form-field appearance="outline" class="filter-field filter-item">
+          <mat-label>Filtro 2</mat-label>
+          <input matInput type="text" placeholder="Digite para filtrar..." [(ngModel)]="filtro2"
+            (ngModelChange)="aplicarFiltro()" />
+          <button *ngIf="filtro2" matSuffix mat-icon-button aria-label="Limpar" (click)="filtro2=''; aplicarFiltro();">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+  
+        <mat-form-field appearance="outline" class="filter-field filter-item">
+          <mat-label>Filtro 3</mat-label>
+          <input matInput type="text" placeholder="Digite para filtrar..." [(ngModel)]="filtro3"
+            (ngModelChange)="aplicarFiltro()" />
+          <button *ngIf="filtro3" matSuffix mat-icon-button aria-label="Limpar" (click)="filtro3=''; aplicarFiltro();">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+  
+        <mat-form-field appearance="outline" class="filter-field filter-item">
+          <mat-label>Filtro 4</mat-label>
+          <input matInput type="text" placeholder="Digite para filtrar..." [(ngModel)]="filtro4"
+            (ngModelChange)="aplicarFiltro()" />
+          <button *ngIf="filtro4" matSuffix mat-icon-button aria-label="Limpar" (click)="filtro4=''; aplicarFiltro();">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+      </div> <!-- Fim da nova div .filter-inputs-wrapper -->
+  
+      <button mat-raised-button color="primary" (click)="navegarParaMenu()" class="action-button filter-add-button"> <!-- Adicionada classe opcional para o botão -->
+        Sair
+        <mat-icon>exit_to_app</mat-icon>
+      </button>
+    </div>
     <div class="table-container">
       <!-- Indicador de Carregamento -->
-      <div *ngIf="isLoading" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;">
+      <div *ngIf="isLoading" class="loading-container">
         <mat-spinner diameter="50"></mat-spinner>
-        <span style="margin-top: 12px; font-size: 1.2em; color: #444;">Aguarde...</span>
+        <span class="loading-text">Aguarde...</span>
       </div>
-      <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="mat-elevation-z8" *ngIf="!isLoading">
-        <ng-container matColumnDef="numero_po">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> N° do PO </th>
-          <td mat-cell *matCellDef="let po"> {{ po.numero_po }} </td>
-        </ng-container>
-        <ng-container matColumnDef="data_po">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> Data PO </th>
-          <td mat-cell *matCellDef="let po"> {{ po.data_po | date:'dd/MM/yyyy' }} </td>
-        </ng-container>
-        <ng-container matColumnDef="tipo_de_logradouro">
-          <th mat-header-cell *matHeaderCellDef> Tipo de Logradouro </th>
-          <td mat-cell *matCellDef="let po"> {{ po.tipo_de_logradouro }} </td>
-        </ng-container>
-        <ng-container matColumnDef="logradouro">
-          <th mat-header-cell *matHeaderCellDef> Logradouro </th>
-          <td mat-cell *matCellDef="let po"> {{ po.logradouro }} </td>
-        </ng-container>
-        <ng-container matColumnDef="complemento">
-          <th mat-header-cell *matHeaderCellDef> Complemento </th>
-          <td mat-cell *matCellDef="let po"> {{ po.complemento }} </td>
-        </ng-container>
-        <ng-container matColumnDef="analista">
-          <th mat-header-cell *matHeaderCellDef> Analista </th>
-          <td mat-cell *matCellDef="let po"> {{ po.analista }} </td>
-        </ng-container>
-        <ng-container matColumnDef="data_implantacao">
-          <th mat-header-cell *matHeaderCellDef> Data Implantação </th>
-          <td mat-cell *matCellDef="let po"> {{ po.data_implantacao }} </td>
-        </ng-container>
-        <ng-container matColumnDef="funcionario_responsavel">
-          <th mat-header-cell *matHeaderCellDef> Funcionário Responsável </th>
-          <td mat-cell *matCellDef="let po"> {{ po.funcionario_responsavel }} </td>
-        </ng-container>
-        <ng-container matColumnDef="bairro">
-          <th mat-header-cell *matHeaderCellDef> Bairro </th>
-          <td mat-cell *matCellDef="let po"> {{ po.bairro }} </td>
-        </ng-container>
-        <ng-container matColumnDef="observacoes">
-          <th mat-header-cell *matHeaderCellDef> Observações </th>
-          <td mat-cell *matCellDef="let po"> {{ po.observacoes }} </td>
-        </ng-container>
-        <ng-container matColumnDef="detalhamento">
-          <th mat-header-cell *matHeaderCellDef> Detalhamento </th>
-          <td mat-cell *matCellDef="let po"> {{ po.detalhamento }} </td>
-        </ng-container>
-        <ng-container matColumnDef="especificacoes">
-          <th mat-header-cell *matHeaderCellDef> Especificações </th>
-          <td mat-cell *matCellDef="let po"> {{ po.especificacoes }} </td>
-        </ng-container>
-        <ng-container matColumnDef="e_mail">
-          <th mat-header-cell *matHeaderCellDef> E-mail </th>
-          <td mat-cell *matCellDef="let po"> {{ po.e_mail }} </td>
-        </ng-container>
-        <ng-container matColumnDef="situacao">
-          <th mat-header-cell *matHeaderCellDef> Situação </th>
-          <td mat-cell *matCellDef="let po"> {{ po.situacao }} </td>
-        </ng-container>
-        <ng-container matColumnDef="solicitante">
-          <th mat-header-cell *matHeaderCellDef> Solicitante </th>
-          <td mat-cell *matCellDef="let po"> {{ po.solicitante }} </td>
-        </ng-container>
-        <ng-container matColumnDef="tipo_de_solicitante">
-          <th mat-header-cell *matHeaderCellDef> Tipo de Solicitante </th>
-          <td mat-cell *matCellDef="let po"> {{ po.tipo_de_solicitante }} </td>
-        </ng-container>
-        <ng-container matColumnDef="data_enc_dro">
-          <th mat-header-cell *matHeaderCellDef> Data Enc. DRO </th>
-          <td mat-cell *matCellDef="let po"> {{ po.data_enc_dro }} </td>
-        </ng-container>
-        <ng-container matColumnDef="link_do_po">
-          <th mat-header-cell *matHeaderCellDef> Link do PO </th>
-          <td mat-cell *matCellDef="let po"> <a [href]="po.link_do_po" target="_blank">Abrir</a> </td>
-        </ng-container>
-        <ng-container matColumnDef="numero_de_controle">
-          <th mat-header-cell *matHeaderCellDef> Nº de Controle </th>
-          <td mat-cell *matCellDef="let po"> {{ po.numero_de_controle }} </td>
-        </ng-container>
-        <ng-container matColumnDef="data_arquivamento">
-          <th mat-header-cell *matHeaderCellDef> Data Arquivamento </th>
-          <td mat-cell *matCellDef="let po"> {{ po.data_arquivamento }} </td>
-        </ng-container>
-        <ng-container matColumnDef="criado_em">
-          <th mat-header-cell *matHeaderCellDef> Criado em </th>
-          <td mat-cell *matCellDef="let po"> {{ po.criado_em }} </td>
-        </ng-container>
-        <ng-container matColumnDef="ultima_edicao">
-          <th mat-header-cell *matHeaderCellDef> Última Edição </th>
-          <td mat-cell *matCellDef="let po"> {{ po.ultima_edicao }} </td>
-        </ng-container>
-        <ng-container matColumnDef="acoes">
-          <th mat-header-cell *matHeaderCellDef> Ações </th>
-          <td mat-cell *matCellDef="let po">
-            <button mat-icon-button (click)="atualizar(po)">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="excluir(po)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
-      <mat-paginator 
-        [length]="totalItems"
-        [pageSize]="pageSize"
-        [pageSizeOptions]="[5, 10, 25, 50]"
-        (page)="onPageChange($event)"
-        showFirstLastButtons
-        aria-label="Selecione a página">
-      </mat-paginator>
+
+      <div class="table-responsive" *ngIf="!isLoading">
+        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)"
+          class="mat-elevation-z8">
+
+          <!-- Coluna N° do PO -->
+          <ng-container matColumnDef="numero_po">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>N° do PO</th>
+            <td mat-cell *matCellDef="let po">{{ po.numero_po }}</td>
+          </ng-container>
+
+          <!-- Coluna Data PO -->
+          <ng-container matColumnDef="data_po">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Data PO</th>
+            <td mat-cell *matCellDef="let po">{{ po.data_po }}</td>
+          </ng-container>
+
+          <!-- Coluna Tipo de Logradouro -->
+          <ng-container matColumnDef="tipo_logradouro">
+            <th mat-header-cell *matHeaderCellDef>Tipo de Logradouro</th>
+            <td mat-cell *matCellDef="let po">{{ po.tipo_logradouro }}</td>
+          </ng-container>
+
+          <!-- Coluna Logradouro -->
+          <ng-container matColumnDef="logradouro">
+            <th mat-header-cell *matHeaderCellDef>Logradouro</th>
+            <td mat-cell *matCellDef="let po">{{ po.logradouro }}</td>
+          </ng-container>
+
+          <!-- Coluna Complemento -->
+          <ng-container matColumnDef="complemento">
+            <th mat-header-cell *matHeaderCellDef>Complemento</th>
+            <td mat-cell *matCellDef="let po">{{ po.complemento }}</td>
+          </ng-container>
+
+          <!-- Coluna Analista -->
+          <ng-container matColumnDef="analista">
+            <th mat-header-cell *matHeaderCellDef>Analista</th>
+            <td mat-cell *matCellDef="let po">{{ po.analista }}</td>
+          </ng-container>
+
+          <!-- Coluna Data Implantação -->
+          <ng-container matColumnDef="data_implantacao">
+            <th mat-header-cell *matHeaderCellDef>Data Implantação</th>
+            <td mat-cell *matCellDef="let po">{{ po.data_implantacao }}</td>
+          </ng-container>
+
+          <!-- Coluna Funcionário Responsável -->
+          <ng-container matColumnDef="funcionario_responsavel">
+            <th mat-header-cell *matHeaderCellDef>Funcionário Responsável</th>
+            <td mat-cell *matCellDef="let po">{{ po.funcionario_responsavel }}</td>
+          </ng-container>
+
+          <!-- Coluna Bairro -->
+          <ng-container matColumnDef="bairro">
+            <th mat-header-cell *matHeaderCellDef>Bairro</th>
+            <td mat-cell *matCellDef="let po">{{ po.bairro }}</td>
+          </ng-container>
+
+          <!-- Coluna Observações -->
+          <ng-container matColumnDef="observacoes">
+            <th mat-header-cell *matHeaderCellDef>Observações</th>
+            <td mat-cell *matCellDef="let po" class="truncate-cell" [matTooltip]="po.observacoes"
+              matTooltipPosition="above"><span>...</span></td>
+          </ng-container>
+
+          <!-- Coluna Detalhamento -->
+          <ng-container matColumnDef="detalhamento">
+            <th mat-header-cell *matHeaderCellDef>Detalhamento</th>
+            <td mat-cell *matCellDef="let po">{{ po.detalhamento }}</td>
+          </ng-container>
+
+          <!-- Coluna Especificações -->
+          <ng-container matColumnDef="especificacoes">
+            <th mat-header-cell *matHeaderCellDef>Especificações</th>
+            <td mat-cell *matCellDef="let po">{{ po.especificacoes }}</td>
+          </ng-container>
+
+          <!-- Coluna Situação -->
+          <ng-container matColumnDef="situacao">
+            <th mat-header-cell *matHeaderCellDef>Situação</th>
+            <td mat-cell *matCellDef="let po">{{ po.situacao }}</td>
+          </ng-container>
+
+          <!-- Coluna Solicitante -->
+          <ng-container matColumnDef="solicitante">
+            <th mat-header-cell *matHeaderCellDef>Solicitante</th>
+            <td mat-cell *matCellDef="let po">{{ po.solicitante }}</td>
+          </ng-container>
+
+          <!-- Coluna Tipo de Solicitante -->
+          <ng-container matColumnDef="tipo_solicitante">
+            <th mat-header-cell *matHeaderCellDef>Tipo de Solicitante</th>
+            <td mat-cell *matCellDef="let po">{{ po.tipo_solicitante }}</td>
+          </ng-container>
+
+          <!-- Coluna Data Enc. DRO -->
+          <ng-container matColumnDef="data_enc_dro">
+            <th mat-header-cell *matHeaderCellDef>Data Enc. DRO</th>
+            <td mat-cell *matCellDef="let po">{{ po.data_enc_dro }}</td>
+          </ng-container>
+
+          <!-- Coluna Link do PO -->
+          <ng-container matColumnDef="link_po">
+            <th mat-header-cell *matHeaderCellDef>Link do PO</th>
+            <td mat-cell *matCellDef="let po">
+              <a [href]="po.link_po" target="_blank" *ngIf="po.link_po">Abrir</a>
+              <span *ngIf="!po.link_po">-</span>
+            </td>
+          </ng-container>
+
+          <!-- Coluna Nº de Controle -->
+          <ng-container matColumnDef="numero_controle">
+            <th mat-header-cell *matHeaderCellDef>Nº de Controle</th>
+            <td mat-cell *matCellDef="let po">{{ po.numero_controle || '-' }}</td>
+          </ng-container>
+
+          <!-- Coluna Data Arquivamento -->
+          <ng-container matColumnDef="data_arquivamento">
+            <th mat-header-cell *matHeaderCellDef>Data Arquivamento</th>
+            <td mat-cell *matCellDef="let po">{{ po.data_arquivamento || '-' }}</td>
+          </ng-container>
+
+          <!-- Coluna Ações -->
+          <ng-container matColumnDef="acoes">
+            <th mat-header-cell *matHeaderCellDef class="text-right">Ações</th>
+            <td mat-cell *matCellDef="let po" class="text-right">
+              <button mat-icon-button class="orange-icon" (click)="visualizarPo(po)" matTooltip="Visualizar PO">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button class="green-icon" (click)="alterarPo(po)" matTooltip="Alterar PO">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deletarPo(po)" matTooltip="Deletar PO">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Linhas da tabela -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selecionarLinha(row)"
+            [class.selected-row]="isSelected(row)"></tr>
+        </table>
+
+        <mat-paginator [pageSizeOptions]="[5, 10, 20]" [pageSize]="pageSize" [length]="totalItems"
+          (page)="onPageChange($event)" showFirstLastButtons>
+        </mat-paginator>
+      </div>
     </div>
   </mat-card-content>
 </mat-card>

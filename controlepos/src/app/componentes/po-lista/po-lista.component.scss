@@ -14,12 +14,198 @@
   background-color: #fff; 
 }
 
-.po-list-card {
-  margin: 20px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
-  // max-width: 1200px; 
-  // margin-left: auto;  
-  // margin-right: auto; 
+mat-card.po-list-card {
+  margin: 16px; 
+  padding: 24px 16px;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
+  max-height: 100vh;
+  overflow: hidden;
+
+  .mat-mdc-card-header {
+    padding: 0 0 16px 0;
+    margin: 0;
+    flex-shrink: 0;
+    
+    .header-actions {
+      width: 98%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #dce9f3;
+      color: #3f51b5;
+    }
+  }
+
+  .mat-mdc-card-content {
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .table-container {
+    width: 100%;
+    flex: 1;  
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    height: 100%;
+    
+    .loading-text {
+      margin-top: 16px;
+      font-size: 1.1em;
+      color: #555;
+    }
+  }
+
+  .table-responsive {
+    width: 100%;
+    flex: 1;
+    overflow: auto;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 16px;
+
+    table {
+      width: 100%;
+      min-width: 1800px;
+      border-collapse: collapse;
+      
+      .mat-mdc-header-row {
+        background-color: #f8f9fa;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        
+        .mat-mdc-header-cell {
+          font-weight: 600;
+          font-size: 14px;
+          color: #333;
+          white-space: nowrap;
+          padding: 12px 16px;
+          border-bottom: 2px solid #e0e0e0;
+          box-sizing: border-box;
+          vertical-align: middle;
+          
+          &.mat-sort-header {
+            cursor: pointer;
+            user-select: none;
+            
+            &:hover {
+              color: #000;
+            }
+            
+            &.mat-sorted {
+              color: #000;
+            }
+          }
+        }
+      }
+      
+      .mat-mdc-cell {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+        color: #424242;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+      }
+      
+      .mat-mdc-row {
+        transition: background-color 0.2s;
+        
+        &:hover {
+          background-color: #f5f5f5;
+          
+          .mat-mdc-cell {
+            background-color: transparent;
+          }
+        }
+        
+        &.selected {
+          background-color: #e3f2fd;
+          
+          &:hover {
+            background-color: #bbdefb;
+          }
+        }
+      }
+      
+      .mat-column-acoes {
+        text-align: right;
+        
+        button {
+          margin-left: 8px;
+          
+          mat-icon {
+            font-size: 20px;
+            height: 20px;
+            width: 20px;
+            line-height: 20px;
+          }
+        }
+      }
+    }
+  }
+
+  .mat-mdc-paginator {
+    margin-top: auto;
+    background-color: transparent;
+    border-top: 1px solid #e0e0e0;
+    padding: 8px 0 0;
+    
+    .mat-mdc-paginator-container {
+      justify-content: space-between;
+      min-height: 56px;
+    }
+  }
+  
+  @media (max-width: 959px) {
+    margin: 0;
+    border-radius: 0;
+    height: 100vh;
+    max-height: 100vh;
+    
+    .table-responsive {
+      margin-bottom: 0;
+      border: none;
+      border-radius: 0;
+    }
+    
+    .mat-mdc-paginator {
+      border-radius: 0;
+    }
+  }
+}
+
+.truncate-cell {
+  max-width: 200px; /* Ajuste este valor conforme sua necessidade */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block; /* Ajuda a garantir que text-overflow funcione, especialmente se usado em um span/div dentro da célula */
+}
+
+mat-card.po-list-card > mat-card-content {
+  padding: 0; /* Remove padding do content se o card já tem */
 }
 
 mat-card-header {
@@ -52,6 +238,10 @@ mat-card-header {
 button.mat-mdc-raised-button.action-button {
   background-color: #dce9f3; /* Cor primária do tema indigo-pink (índigo) */
   color: #3f51b5; /* Texto branco para o label do botão */
+  margin: 0px 20px 0 0; /* Adiciona margem à esquerda do botão */
+  height: 52px;
+  width: 200px;
+  font-size: 16px;
 
   .mat-icon { /* Garante que o ícone também fique branco */
     color: #3f51b5;
@@ -67,7 +257,7 @@ button.mat-mdc-raised-button.action-button {
 // Por enquanto, manteremos color="warn" para o delete.
 
 .filter-field {
-  width: 300px; 
+  width: 150px; 
   // margin-left: 0; 
   // margin-right: 0; 
   // flex-grow: 0;    
@@ -106,11 +296,221 @@ button.mat-mdc-raised-button.action-button {
 }
 
 .table-responsive {
-  overflow-x: auto; 
-  border-radius: 4px; 
-  max-height: 600px; 
-  margin-bottom: 20px;
+  width: 100%;
+  overflow-x: auto; /* Scroll horizontal aqui */
+  background: transparent;
+  border-radius: 4px; /* Opcional: para o container do scroll */
+  margin-bottom: 16px; /* Espaço antes do paginador */
 }
+
+.filter-container {
+  width: 98%; // Você tinha definido isso, pode ajustar para 98% ou 100% se preferir que o grid ocupe mais espaço do card
+  display: grid;
+  grid-template-columns: 1fr auto; // Coluna de filtros flexível, coluna do botão se ajusta ao conteúdo
+  gap: 30px; // Espaçamento entre a coluna de filtros e a coluna do botão
+  align-items: start; // Alinha os itens ao topo de suas respectivas colunas
+  // Removido flex-wrap e gap daqui, pois o grid cuida do layout principal
+}
+.filter-inputs-wrapper {
+  display: flex;
+  flex-wrap: wrap; // Permite que os campos de filtro quebrem linha
+  gap: 8px; // Espaçamento entre os campos de filtro
+  align-items: center; // Alinha os campos de filtro verticalmente
+}
+
+.filter-field.filter-item {
+  margin-right: 0; // Remove a margem direita individual, o gap do wrapper cuida disso
+  // min-width: 150px; // Você pode ajustar ou manter a min-width para os campos de filtro
+  flex-grow: 1; // Permite que os campos cresçam
+}
+
+// Estilos para o botão "Adicionar PO" dentro do grid, se necessário
+//.filter-add-button { // Classe opcional adicionada ao botão no HTML
+  // Se quiser que o botão ocupe toda a altura da célula do grid ou alinhe-se de forma específica:
+  // align-self: stretch; // Exemplo: faz o botão esticar verticalmente
+  // justify-self: end; // Exemplo: alinha o botão à direita da sua coluna do grid
+//}
+
+.filter-item {
+  margin-right: 5px; /* Adiciona margem à direita de cada campo de filtro */
+  flex-grow: 1; /* Permite que os campos cresçam para preencher o espaço, se desejado */
+  min-width: 75px; /* Largura mínima para cada campo de filtro */
+}
+
+/* Remove a margem do último item para evitar espaço extra */
+.filter-item:last-child {
+  margin-right: 0;
+}
+
+.orange-icon {
+  color: #f78104;
+}   
+
+.green-icon {
+  color: #00b894;
+}
+
+@media (max-width: 768px) {
+  .filter-item {
+    margin-right: 0;
+    margin-bottom: 5px; /* Adiciona margem inferior em telas menores quando os itens estão empilhados */
+    width: 100%; /* Faz cada filtro ocupar a largura total em telas pequenas */
+  }
+
+  .filter-item:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.table-responsive table {
+  min-width: 1800px; /* Ajuste conforme a largura total das suas colunas */
+  width: 100%;
+  background: transparent;
+}
+
+.table-responsive table {
+  min-width: 1200px;
+  background: transparent;
+}
+
+.mat-header-row, .mat-header-cell, .mat-mdc-header-row, .mat-mdc-header-cell {
+  background: #f9f9f9 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+
+/* Estilo do card principal */
+mat-card.po-list-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  /* Sobrescrevendo estilos do mat-card-content */
+  .mat-mdc-card-content {
+    flex: 1;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+/* Container principal da tabela */
+.table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+
+  /* Tabela responsiva */
+  .table-responsive {
+    flex: 1;
+    overflow: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    position: relative;
+
+    /* Sobrescrevendo estilos da tabela do Material */
+    .mat-mdc-table {
+      width: 100%;
+      min-width: 1200px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    /* Cabeçalho fixo */
+    .mat-mdc-header-row {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #dce9f3;
+      
+      /* Garantindo que o background cubra o conteúdo ao rolar */
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: inherit;
+        z-index: -1;
+      }
+    }
+
+    /* Células do cabeçalho */
+    .mat-mdc-header-cell {
+      background: transparent;
+      font-weight: 600;
+      color: #333;
+      white-space: nowrap;
+      padding: 12px 16px;
+      border-bottom: 2px solid #ccc;
+    }
+
+    /* Linhas da tabela */
+    .mat-mdc-row {
+      transition: background-color 0.2s;
+      
+      &:hover {
+        background-color: #f5f5f5;
+      }
+      
+      &.selected {
+        background-color: #e3f2fd;
+      }
+    }
+
+    /* Células da tabela */
+    .mat-mdc-cell {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+
+    /* Coluna de ações */
+    .mat-column-acoes {
+      text-align: right;
+      
+      button {
+        margin-left: 8px;
+      }
+    }
+  }
+
+  /* Paginador */
+  .mat-mdc-paginator {
+    margin-top: 16px;
+    border-top: 1px solid #e0e0e0;
+    background: transparent;
+  }
+}
+
+/* Estilos para o indicador de carregamento */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  
+  .loading-text {
+    margin-top: 12px;
+    font-size: 1.1em;
+    color: #555;
+  }
+}
+
 
 table {
   width: 100%;
@@ -151,7 +551,7 @@ table {
 
 .mat-row,
 .mat-mdc-row {
-  height: 43px; 
+  height: 38px !important; 
 }
 
 .mat-cell,

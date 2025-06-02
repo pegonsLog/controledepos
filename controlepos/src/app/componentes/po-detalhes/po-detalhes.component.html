@@ -31,7 +31,7 @@
         </div>
         <div class="detalhe-item">
           <span class="detalhe-label">Logradouro:</span>
-          <span class="detalhe-valor">{{ po.tipo_de_logradouro }} {{ po.logradouro }}</span>
+          <span class="detalhe-valor">{{ po.tipo_logradouro }} {{ po.logradouro }}</span>
         </div>
         <div class="detalhe-item">
           <span class="detalhe-label">Complemento:</span>
@@ -43,7 +43,7 @@
         </div>
         <div class="detalhe-item">
           <span class="detalhe-label">Data de Implantação:</span>
-          <span class="detalhe-valor">{{ po.data_implantacao | date:'dd/MM/yyyy' }}</span>
+          <span class="detalhe-valor">{{ po.data_implantacao}}</span>
         </div>
         <div class="detalhe-item">
           <span class="detalhe-label">Funcionário Responsável:</span>
@@ -57,37 +57,25 @@
           <span class="detalhe-label">Especificações:</span>
           <span class="detalhe-valor">{{ po.especificacoes }}</span>
         </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">E-mail Contato:</span>
-          <span class="detalhe-valor">{{ po.e_mail }}</span>
-        </div>
-        <div class="detalhe-item">
+          <div class="detalhe-item">
           <span class="detalhe-label">Tipo de Solicitante:</span>
-          <span class="detalhe-valor">{{ po.tipo_de_solicitante }}</span>
+          <span class="detalhe-valor">{{ po.tipo_solicitante }}</span>
         </div>
         <div class="detalhe-item">
           <span class="detalhe-label">Data Encerramento DRO:</span>
-          <span class="detalhe-valor">{{ po.data_enc_dro | date:'dd/MM/yyyy' }}</span>
+          <span class="detalhe-valor">{{ po.data_enc_dro }}</span>
         </div>
         <div class="detalhe-item">
           <span class="detalhe-label">Link da PO:</span>
-          <span class="detalhe-valor"><a [href]="po.link_do_po" target="_blank">{{ po.link_do_po }}</a></span>
+          <span class="detalhe-valor"><a [href]="po.link_po" target="_blank">{{ po.link_po }}</a></span>
         </div>
         <div class="detalhe-item">
           <span class="detalhe-label">Número de Controle:</span>
-          <span class="detalhe-valor">{{ po.numero_de_controle }}</span>
+          <span class="detalhe-valor">{{ po.numero_controle }}</span>
         </div>
         <div class="detalhe-item">
           <span class="detalhe-label">Data de Arquivamento:</span>
-          <span class="detalhe-valor">{{ po.data_arquivamento | date:'dd/MM/yyyy' }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Criado em:</span>
-          <span class="detalhe-valor">{{ po.criado_em | date:'dd/MM/yyyy HH:mm' }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Última Edição:</span>
-          <span class="detalhe-valor">{{ po.ultima_edicao | date:'dd/MM/yyyy HH:mm' }}</span>
+          <span class="detalhe-valor">{{ po.data_arquivamento }}</span>
         </div>
       </div>
     </mat-card-content>
