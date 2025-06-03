@@ -12,7 +12,7 @@ export const routes: Routes = [
   { path: 'po/editar/:numero_po', component: PoFormComponent }, 
   { path: 'po/detalhes/:sheetName/:numero_po', component: PoDetalhesComponent }, 
   { path: 'lista-pos/:sheetName', component: PoListaComponent },
-  { path: 'pdfs', component: PdfListComponent },
+  { path: 'pdfs/:folderIdentifier', component: PdfListComponent },
   { path: 'menu', component: MenuComponent },
   { path: '', component: MenuComponent }
 ];

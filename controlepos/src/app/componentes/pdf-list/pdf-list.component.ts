@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PdfService, PdfFile } from '../../services/pdf.service'; // Ajuste o caminho se o serviço estiver em outro local
@@ -39,30 +39,45 @@ export class PdfListComponent implements OnInit, AfterViewInit {
   searchTerm = '';
   searchTerm2 = '';
   searchTerm3 = '';
+  searchTerm4 = '';
   loading = true;
   errorMessage = '';
+  tituloRegional: string = '';
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  constructor(private pdfService: PdfService, private router: Router) { }
+  constructor(private pdfService: PdfService, private router: Router, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     this.loading = true;
-    this.pdfService.getPdfFiles().subscribe(
-      (files) => {
-        this.allPdfFiles = files;
-        this.searchTerm = '';
-        this.searchTerm2 = '';
-        this.searchTerm3 = '';
-        this.filterPdfFiles();
-        this.dataSource.paginator = this.paginator;
-        this.loading = false;
-      },
-      (error) => {
-        this.errorMessage = 'Erro ao carregar os arquivos.';
-        console.error('Erro ao buscar os PDFs:', error);
+    this.route.paramMap.subscribe(params => {
+      const folderIdentifier = params.get('folderIdentifier');
+      if (folderIdentifier) {
+        this.tituloRegional = folderIdentifier.toUpperCase();
+        this.pdfService.getPdfFiles(folderIdentifier).subscribe(
+          (files) => {
+            this.allPdfFiles = files;
+            this.searchTerm = '';
+            this.searchTerm2 = '';
+            this.searchTerm3 = '';
+            this.searchTerm4 = '';
+            this.filterPdfFiles();
+            if (this.paginator) { // Ensure paginator is available before assigning
+              this.dataSource.paginator = this.paginator;
+            }
+            this.loading = false;
+          },
+          (error: any) => { // Correctly placed error handler for getPdfFiles
+            this.errorMessage = `Erro ao carregar os arquivos da pasta ${folderIdentifier}.`;
+            console.error(`Erro ao buscar os PDFs para ${folderIdentifier}:`, error);
+            this.loading = false;
+          }
+        );
+      } else {
+        this.errorMessage = 'Identificador da pasta não encontrado na rota.';
+        console.error('Identificador da pasta não encontrado na rota.');
         this.loading = false;
       }
-    );
+    });
   }
 
   filterPdfFiles(): void {
@@ -73,7 +88,8 @@ export class PdfListComponent implements OnInit, AfterViewInit {
     this.dataSource.data = this.allPdfFiles.filter(file =>
       file.name.toLowerCase().includes(this.searchTerm.toLowerCase()) &&
       file.name.toLowerCase().includes(this.searchTerm2.toLowerCase()) &&
-      file.name.toLowerCase().includes(this.searchTerm3.toLowerCase())
+      file.name.toLowerCase().includes(this.searchTerm3.toLowerCase()) &&
+      file.name.toLowerCase().includes(this.searchTerm4.toLowerCase())
     );
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();

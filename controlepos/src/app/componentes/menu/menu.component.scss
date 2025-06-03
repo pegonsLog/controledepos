@@ -8,7 +8,9 @@
   
     button {
       margin-bottom: 16px; // Espaçamento entre os botões
-      min-width: 200px; // Largura mínima para os botões
+      min-width: 300px; // Largura mínima para os botões
+      height: 70px;
+      font-family: 'Montserrat', sans-serif;
     }
   
     button:last-child {

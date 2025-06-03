@@ -2,7 +2,7 @@
   <mat-card-content>
     <mat-card-title>
       <div class="header-actions">
-        <p>CONSULTA DE POS DIGITALIZADOS</p>
+        <p>CONSULTA DE POS DIGITALIZADOS - {{ tituloRegional }}</p>
       </div>
     </mat-card-title>
     <div class="filtros-inline">
@@ -23,6 +23,13 @@
       <mat-form-field appearance="outline">
         <mat-label>Filtrar 3</mat-label>
         <input matInput [(ngModel)]="searchTerm3" (keyup)="filterPdfFiles()" placeholder="Filtro 3">
+        <button mat-icon-button matSuffix disabled>
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Filtrar 4</mat-label>
+        <input matInput [(ngModel)]="searchTerm4" (keyup)="filterPdfFiles()" placeholder="Filtro 4">
         <button mat-icon-button matSuffix disabled>
           <mat-icon>search</mat-icon>
         </button>

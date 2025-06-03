@@ -46,6 +46,35 @@ mat-card.po-list-card {
     }
   }
 
+  .filter-container {
+    display: flex;
+    align-items: flex-start; // Alinha os itens (wrapper dos inputs e botões) ao topo
+    gap: 8px; 
+    padding-bottom: 16px;
+    width: 100%;
+
+    .filter-inputs-wrapper {
+      display: flex;
+      align-items: flex-start; // Alinha os campos de filtro ao topo dentro do wrapper
+      gap: 8px; 
+      flex-grow: 1; // Crucial: faz este wrapper ocupar o espaço disponível
+
+      .filter-item {
+        flex: 1 1 0; // Distribui o espaço igualmente entre os filtros dentro do wrapper
+        min-width: 0; // Permite que os inputs encolham bastante se necessário
+        // Removido max-width para permitir que preencham o espaço
+      }
+    }
+
+    .action-button {
+      margin-left: 0; 
+      flex-shrink: 0; // Impede que os botões encolham
+      // Para dar um pouco mais de espaço aos botões, se necessário:
+      // padding-left: 8px;
+      // padding-right: 8px;
+    }
+  }
+
   .mat-mdc-card-content {
     padding: 0;
     margin: 0;
@@ -265,7 +294,7 @@ button.mat-mdc-raised-button.action-button {
   background-color: #dce9f3; /* Cor primária do tema indigo-pink (índigo) */
   color: #3f51b5; /* Texto branco para o label do botão */
   margin: 0px 20px 0 0; /* Adiciona margem à esquerda do botão */
-  height: 52px;
+  height: 54px;
   width: 200px;
   font-size: 16px;
 
@@ -342,6 +371,7 @@ button.mat-mdc-raised-button.action-button {
   flex-wrap: wrap; // Permite que os campos de filtro quebrem linha
   gap: 8px; // Espaçamento entre os campos de filtro
   align-items: center; // Alinha os campos de filtro verticalmente
+  margin-right: 20px;
 }
 
 .filter-field.filter-item {

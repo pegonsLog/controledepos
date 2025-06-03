@@ -288,4 +288,8 @@ export class PoListaComponent implements OnInit, AfterViewInit {
       this.selecionarPo.emit(this.selectedRow.numero_po);
     }
   }
+
+  adicionarPo() {
+    this.router.navigate(['/novo-po']);
+  }
 }

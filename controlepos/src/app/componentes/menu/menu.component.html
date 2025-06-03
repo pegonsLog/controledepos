@@ -1,6 +1,6 @@
 <div class="menu-container">
-  <button mat-raised-button color="primary" [routerLink]="['/lista-pos', 'Oeste']">POs Oeste</button>
-  <button mat-raised-button color="primary" [routerLink]="['/lista-pos', 'Barreiro']">POs Barreiro</button>
-  <button mat-raised-button color="primary" routerLink="/pdfs">Lista de PDFs</button>
-  <button mat-raised-button color="primary" routerLink="/novo-po">Adicionar PO</button>
+  <button mat-raised-button [routerLink]="['/lista-pos', 'Oeste']">POs Oeste</button>
+  <button mat-raised-button [routerLink]="['/lista-pos', 'Barreiro']">POs Barreiro</button>
+  <button mat-raised-button [routerLink]="['/pdfs', 'Oeste']">Lista de PDFs Oeste</button>
+  <button mat-raised-button [routerLink]="['/pdfs', 'Barreiro']">Lista de PDFs Barreiro</button>
 </div>
