@@ -205,8 +205,17 @@ mat-card.po-list-card {
       }
       
       .mat-column-acoes {
-        text-align: right;
-        
+        min-width: 120px; // Definir uma largura mínima para a coluna de ações
+        width: 120px;     // Definir uma largura fixa se necessário, ou usar flex-basis
+        text-align: right; // Garantir alinhamento à direita para as células de dados
+        // justify-content: flex-end; // Para flex containers, se aplicável internamente
+
+        // Estilo específico para o cabeçalho da coluna de ações
+        &.mat-header-cell {
+          text-align: right !important; // Forçar alinhamento à direita para o cabeçalho
+          // justify-content: flex-end; // Se o header cell for flex
+        }
+
         button {
           margin-left: 8px;
           
@@ -675,8 +684,8 @@ table {
 }
 
 .action-button-delete {
-  mat-icon {
-    color: red; // Vermelho para excluir
+  ::ng-deep mat-icon {
+    color: red !important; // Vermelho para excluir, com !important e ::ng-deep
   }
 }
 
@@ -684,3 +693,18 @@ table {
 /* .mat-mdc-form-field {
   // Estilos para o campo de formulário
 } */ // Removido ou comentado para corrigir lint
+
+// Zebra striping para as linhas da tabela
+table.mat-table { // Adicionando table.mat-table para aumentar a especificidade
+  .mat-row:nth-child(even) {
+    background-color: #f4f6f8; /* Um cinza bem claro para as linhas pares */
+  }
+
+  .mat-row:hover { // Também para o hover
+    background-color: #e8eaf6; /* Um tom levemente azulado/acinzentado para hover */
+  }
+
+  .mat-row.selected-row { // E para a linha selecionada
+    background-color: #c5cae9 !important; /* Cor para linha selecionada, com !important para garantir */
+  }
+}

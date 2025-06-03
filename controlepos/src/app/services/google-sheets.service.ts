@@ -14,7 +14,7 @@ export class GoogleSheetsService {
   private dropdownSheetId = '15EzKn5iyziiURj7awjLVtMRYE1swOwdRUpy2Pikr-_k';
 
   // URL do Google App Script (substitua pela sua URL de implantação)
-  private appScriptUrl = 'https://script.google.com/macros/s/AKfycbxfBBvwInqVQxGECbXrgD95PCr5ejsgUg1yE78QqqV7DKwK3MBD6GEToio3KcNp46oiFQ/exec';
+  private appScriptUrl = 'https://script.google.com/macros/s/AKfycbw7OGaLufFYdha5QQr5bjSZceJi5M4pJfpgTSi8QycjyTL7zNKqQK27t7y5P-6WKc1-/exec';
 
   constructor(private http: HttpClient) { }
 
@@ -79,36 +79,52 @@ export class GoogleSheetsService {
   // Operações de escrita/deleção via App Script
   // O payload deve ser estruturado conforme o App Script espera
 
+  // public addSheetData(poData: any, sheetName: string): Observable<any> {
+  //   const payload = {
+  //     action: 'addPo',
+  //     sheetName: sheetName,
+  //     data: poData // O objeto PO completo
+  //   };
+  //   return this.http.post<any>(this.appScriptUrl, payload);
+  // }
+
   public addSheetData(poData: any, sheetName: string): Observable<any> {
-    const payload = {
-      action: 'addPo',
-      sheetName: sheetName,
-      data: poData // O objeto PO completo
-    };
-    return this.http.post<any>(this.appScriptUrl, payload);
+    const formData = new FormData();
+    formData.append('action', 'addPo');
+    formData.append('sheetName', sheetName);
+    formData.append('data', JSON.stringify(poData)); // serializa o objeto
+  
+    return this.http.post(this.appScriptUrl, formData);
   }
+  
+
+  // public updateSheetData(poData: any, sheetName: string, numero_po: string): Observable<any> {
+  //   const payload = {
+  //     action: 'updatePo',
+  //     sheetName: sheetName,
+  //     numero_po: numero_po, // Identificador da linha para atualizar
+  //     data: poData // O objeto PO completo com as atualizações
+  //   };
+  //   return this.http.post<any>(this.appScriptUrl, payload);
+  // }
 
   public updateSheetData(poData: any, sheetName: string, numero_po: string): Observable<any> {
-    const payload = {
-      action: 'updatePo',
-      sheetName: sheetName,
-      numero_po: numero_po, // Identificador da linha para atualizar
-      data: poData // O objeto PO completo com as atualizações
-    };
-    return this.http.post<any>(this.appScriptUrl, payload);
+    const formData = new FormData();
+    formData.append('action', 'updatePo');
+    formData.append('sheetName', sheetName);
+    formData.append('numero_po', numero_po);
+    formData.append('data', JSON.stringify(poData)); // serializa o objeto
+  
+    return this.http.post(this.appScriptUrl, formData);
   }
   
   public deleteSheetDataByPoNumber(numero_po: string, sheetName: string): Observable<any> {
-    const payload = {
-      action: 'deletePoByNumero',
-      sheetName: sheetName,
-      numero_po: numero_po
-    };
-    return this.http.post<any>(this.appScriptUrl, payload).pipe(
-      map(response => {
-        console.log('Resposta do App Script (exclusão):', response);
-        return response;
-      })
-    );
+    const formData = new FormData();
+    formData.append('action', 'deletePoByNumero');
+    formData.append('sheetName', sheetName);
+    formData.append('numero_po', numero_po);
+    formData.append('data', JSON.stringify(numero_po)); // serializa o objeto
+  
+    return this.http.post(this.appScriptUrl, formData);
   }
 }

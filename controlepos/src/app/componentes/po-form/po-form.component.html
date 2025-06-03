@@ -7,18 +7,18 @@
   <form [formGroup]="poForm" (ngSubmit)="onSubmit()" class="po-form">
 
     <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Número da PO</mat-label>
+      <mat-label>Número do PO</mat-label>
       <input matInput formControlName="numero_po" placeholder="Ex: PO-12345">
       <mat-error *ngIf="poForm.get('numero_po')?.hasError('required')">
-        Número da PO é obrigatório.
+        Número do PO é obrigatório.
       </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Data da PO</mat-label>
+      <mat-label>Data do PO</mat-label>
       <input matInput formControlName="data_po" placeholder="dd/mm/aa" mask="00/00/00">
       <mat-error *ngIf="poForm.get('data_po')?.hasError('required')">
-        Data da PO é obrigatória.
+        Data do PO é obrigatória.   
       </mat-error>
     </mat-form-field>
 

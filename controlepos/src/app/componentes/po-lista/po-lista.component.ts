@@ -1,12 +1,13 @@
-import { Component, ViewChild, Output, EventEmitter, AfterViewInit, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { PoService } from '../../services/po.service';
-import { Po } from '../../modelos/po';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { Router, ActivatedRoute } from '@angular/router';
+import { AfterViewInit, Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Importar MatDialog e MatDialogModule
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // Importar MatSnackBar e MatSnackBarModule
+import { MatTableDataSource } from '@angular/material/table';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Po } from '../../modelos/po';
+import { PoService } from '../../services/po.service';
+
 // Importe o ConfirmDialogComponent após criá-lo. Por enquanto, vamos simular sua existência.
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
@@ -15,18 +16,19 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 //   dados: any[]; 
 // }   
 
-import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
-import { MatSortModule } from '@angular/material/sort';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { DateStringPipe } from '../date-string.pipe';
 
 @Component({
   selector: 'app-po-lista',
@@ -47,7 +49,8 @@ import { FormsModule } from '@angular/forms';
     FormsModule,
     MatTooltipModule,
     MatDialogModule, // Adicionar MatDialogModule
-    MatSnackBarModule // Adicionar MatSnackBarModule
+    MatSnackBarModule, // Adicionar MatSnackBarModule
+    DateStringPipe // Adiciona o pipe aos imports
   ]
 })
 export class PoListaComponent implements OnInit, AfterViewInit {
@@ -171,7 +174,7 @@ export class PoListaComponent implements OnInit, AfterViewInit {
 
   constructor(
     private poService: PoService, 
-    private http: HttpClient, 
+    private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute, // Injete ActivatedRoute
     private dialog: MatDialog, // Injetar MatDialog
