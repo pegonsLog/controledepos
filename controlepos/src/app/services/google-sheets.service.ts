@@ -1,81 +1,114 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http'; // HttpClientModule adicionado para standalone
-import { Observable, map } from 'rxjs';
-import { environment } from '../../environments/environment'; // Corrigir caminho do import
+import { HttpClient } from '@angular/common/http';
+import { Observable, map, of } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GoogleSheetsService {
-  private apiKey = environment.googleSheetsApiKey; // Usar apiKey do environment
-  private sheetId = '1AQjzxBPFKxwfAGolCxvzOEcQBs5Z-0yKUKIxsjDXdAI'; // ID da planilha atualizado
+  private apiKey = environment.googleSheetsApiKey;
+  // ID da planilha principal para dados de POs (Oeste, Barreiro)
+  private poSheetId = '1AQjzxBPFKxwfAGolCxvzOEcQBs5Z-0yKUKIxsjDXdAI';
+  // ID da planilha para dados dos dropdowns
+  private dropdownSheetId = '15EzKn5iyziiURj7awjLVtMRYE1swOwdRUpy2Pikr-_k';
+
+  // URL do Google App Script (substitua pela sua URL de implantação)
+  private appScriptUrl = 'https://script.google.com/macros/s/AKfycbxfBBvwInqVQxGECbXrgD95PCr5ejsgUg1yE78QqqV7DKwK3MBD6GEToio3KcNp46oiFQ/exec';
 
   constructor(private http: HttpClient) { }
 
-  public getSheetData(range: string): Observable<string[]> {
-    if (!this.apiKey || this.sheetId === 'COLOQUE_O_ID_DA_SUA_PLANILHA_AQUI') {
-      console.error('API Key ou Sheet ID não configurados para o GoogleSheetsService.');
-      // Em um aplicativo real, você pode querer lançar um erro ou retornar um Observable que emite um erro.
-      return new Observable(observer => {
-        observer.next([]);
-        observer.complete();
-      });
+  private _getSheetData(sheetId: string, range: string): Observable<any[][]> {
+    if (!this.apiKey || !sheetId || sheetId.startsWith('COLOQUE_O_ID')) {
+      console.error('API Key ou Sheet ID não configurados corretamente para o GoogleSheetsService.');
+      return of([]); // Retorna um Observable de array vazio
     }
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${this.sheetId}/values/${range}?key=${this.apiKey}`;
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${this.apiKey}`;
     return this.http.get<any>(url).pipe(
       map(response => {
         if (response && response.values) {
-          // Retorna a estrutura original de linhas e colunas
-          return response.values; // response.values é any[][]
+          return response.values as any[][];
         }
-        // Se não houver valores, retorna uma matriz vazia para evitar erros no serviço consumidor
-        return []; 
+        return [];
       })
     );
   }
 
+  // Método para buscar dados da planilha principal de POs
+  public getPoSheetData(rangeWithSheetName: string): Observable<any[][]> {
+    // Ex: rangeWithSheetName pode ser 'Oeste!A:Z'
+    return this._getSheetData(this.poSheetId, rangeWithSheetName);
+  }
+
+  // Método para buscar dados da planilha de dropdowns e retornar como string[] (primeira coluna)
+  private getDropdownData(sheetNameForDropdown: string): Observable<string[]> {
+    // Busca a coluna A inteira da aba especificada na planilha de dropdowns
+    const range = `${sheetNameForDropdown}!A:A`;
+    return this._getSheetData(this.dropdownSheetId, range).pipe(
+      map(data => {
+        if (!data || data.length === 0) {
+          return [];
+        }
+        // Pega o primeiro item de cada linha (array interno) e filtra vazios/nulos
+        return data.map(row => row[0]).filter(value => value != null && value !== '');
+      })
+    );
+  }
+
+  // Métodos para os dropdowns atualizados
   getTiposLogradouro(): Observable<string[]> {
-    return this.getSheetData('Tipo_Logradouro!A:A');
+    return this.getDropdownData('Tipo_Logradouro');
   }
 
   getAnalistas(): Observable<string[]> {
-    return this.getSheetData('Analista!A:A');
+    return this.getDropdownData('Analista');
   }
 
   getFuncionariosResponsaveis(): Observable<string[]> {
-    return this.getSheetData('Funcionario!A:A');
+    return this.getDropdownData('Funcionario');
   }
 
   getSituacoes(): Observable<string[]> {
-    return this.getSheetData('Situacao!A:A');
+    return this.getDropdownData('Situacao');
   }
 
-  getTiposDeSolicitante(): Observable<string[]> { 
-    return this.getSheetData('Solicitante!A:A'); 
+  getTiposDeSolicitante(): Observable<string[]> {
+    return this.getDropdownData('Solicitante');
   }
 
-  public deleteSheetDataByPoNumber(numero_po: string, sheetName: string): Observable<any> {
-    // TODO: Substitua pela URL de implantação do seu Google App Script.
-    const appScriptUrl = 'https://script.google.com/macros/s/YOUR_APP_SCRIPT_DEPLOYMENT_ID/exec';
+  // Operações de escrita/deleção via App Script
+  // O payload deve ser estruturado conforme o App Script espera
 
-    // TODO: Ajuste o payload conforme o que seu App Script espera.
-    // Exemplo: o App Script pode esperar uma ação, o nome da aba e o identificador.
+  public addSheetData(poData: any, sheetName: string): Observable<any> {
     const payload = {
-      action: 'deletePoByNumero', // Ação que seu App Script irá identificar
-      sheetName: sheetName,       // Ex: 'Oeste', 'Barreiro'
-      numero_po: numero_po        // O número do PO para identificar a linha a ser excluída
+      action: 'addPo',
+      sheetName: sheetName,
+      data: poData // O objeto PO completo
     };
+    return this.http.post<any>(this.appScriptUrl, payload);
+  }
 
-    // Geralmente, App Scripts para operações de escrita são configurados para aceitar POST.
-    // Pode ser necessário configurar o CORS no seu App Script.
-    return this.http.post<any>(appScriptUrl, payload).pipe(
+  public updateSheetData(poData: any, sheetName: string, numero_po: string): Observable<any> {
+    const payload = {
+      action: 'updatePo',
+      sheetName: sheetName,
+      numero_po: numero_po, // Identificador da linha para atualizar
+      data: poData // O objeto PO completo com as atualizações
+    };
+    return this.http.post<any>(this.appScriptUrl, payload);
+  }
+  
+  public deleteSheetDataByPoNumber(numero_po: string, sheetName: string): Observable<any> {
+    const payload = {
+      action: 'deletePoByNumero',
+      sheetName: sheetName,
+      numero_po: numero_po
+    };
+    return this.http.post<any>(this.appScriptUrl, payload).pipe(
       map(response => {
-        // TODO: Processe a resposta do seu App Script conforme necessário.
-        // Ele pode retornar uma mensagem de sucesso/falha ou um status.
         console.log('Resposta do App Script (exclusão):', response);
         return response;
       })
-      // Considere adicionar catchError para tratar erros HTTP aqui.
     );
   }
 }

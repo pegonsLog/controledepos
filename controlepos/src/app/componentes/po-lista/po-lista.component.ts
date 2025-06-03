@@ -5,6 +5,10 @@ import { Po } from '../../modelos/po';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { Router, ActivatedRoute } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Importar MatDialog e MatDialogModule
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // Importar MatSnackBar e MatSnackBarModule
+// Importe o ConfirmDialogComponent após criá-lo. Por enquanto, vamos simular sua existência.
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 // Interface Planilha e array planilhas não são mais necessários com a abordagem de rota
 // interface Planilha {
@@ -41,7 +45,9 @@ import { FormsModule } from '@angular/forms';
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatDialogModule, // Adicionar MatDialogModule
+    MatSnackBarModule // Adicionar MatSnackBarModule
   ]
 })
 export class PoListaComponent implements OnInit, AfterViewInit {
@@ -51,53 +57,57 @@ export class PoListaComponent implements OnInit, AfterViewInit {
   @Output() selecionarPo = new EventEmitter<string>();
 
   visualizarPo(po: Po) {
-    // Navegar para a rota de visualização, usando o numero_po como identificador
-    // Certifique-se de que a rota '/pos/visualizar/:id' esteja configurada no seu roteamento
     if (!this.currentSheetName) {
-      console.error('SheetName não definido ao tentar visualizar PO. Não é possível navegar.');
-      // Adicionar algum feedback ao usuário, se apropriado
+      this.snackBar.open('Contexto da planilha não definido. Não é possível visualizar.', 'Fechar', { duration: 3000 });
       return;
     }
     this.router.navigate(['/po/detalhes', this.currentSheetName, po.numero_po]);
-    // Ou, se você tiver um campo 'id' único:
-    // this.router.navigate(['/pos/visualizar', po.id]);
   }
 
   alterarPo(po: Po) {
-    // Navegar para a rota de edição, usando o numero_po como identificador
-    // Certifique-se de que a rota '/pos/editar/:id' esteja configurada no seu roteamento
-    this.router.navigate(['/po/editar', po.numero_po]); 
-    // Ou, se você tiver um campo 'id' único:
-    // this.router.navigate(['/pos/editar', po.id]);
+    if (!this.currentSheetName) {
+      this.snackBar.open('Contexto da planilha não definido. Não é possível alterar.', 'Fechar', { duration: 3000 });
+      return;
+    }
+    if (!po || !po.numero_po) { // Adicionar verificação para po e po.numero_po
+       this.snackBar.open('Dados do PO inválidos para alteração.', 'Fechar', { duration: 3000 });
+          return;
+    }
+    // Navegar para a rota de edição, usando o numero_po e sheetName
+    this.router.navigate(['/alterar-po', this.currentSheetName, encodeURIComponent(po.numero_po)]);
   }
 
   deletarPo(po: Po) {
-    // Adicionar uma confirmação antes de excluir
-    if (confirm(`Tem certeza que deseja excluir o PO: ${po.numero_po}?`)) {
-      // Supondo que PoService.excluir retorne um Observable
-      // TODO: Verificar/implementar PoService.excluir se ainda não existir
-      if (!this.currentSheetName) {
-        console.error("Nome da aba atual não definido para exclusão.");
-        // Adicionar feedback de erro para o usuário
-        return;
-      }
-      this.poService.excluir(po.numero_po, this.currentSheetName).subscribe({
-        next: () => {
-          // Atualizar a lista após a exclusão
-          this.pos = this.pos.filter(p => p.numero_po !== po.numero_po);
-          this.dataSource.data = this.pos; // Atualiza o dataSource
-          this.totalItems = this.pos.length;
-          // Adicionar feedback para o usuário (ex: snackbar)
-          console.log('PO excluído com sucesso:', po.numero_po);
-          // Se estiver usando paginação e filtros do lado do servidor, pode ser necessário recarregar os dados
-          // this.aplicarFiltro(); 
-        },
-        error: (err: unknown) => {
-          console.error('Erro ao excluir PO:', err);
-          // Adicionar feedback de erro para o usuário
-        }
-      });
+    if (!this.currentSheetName) {
+      this.snackBar.open('Contexto da planilha não definido. Não é possível deletar.', 'Fechar', { duration: 3000 });
+      return;
     }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '350px',
+      data: { title: 'Confirmar Exclusão', message: `Tem certeza que deseja excluir o PO: ${po.numero_po} da planilha ${this.currentSheetName}?` }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) { // Se o usuário confirmou (clicou em "Sim")
+        this.isLoading = true;
+        this.poService.excluir(po.numero_po, this.currentSheetName).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.pos = this.pos.filter(p => p.numero_po !== po.numero_po);
+            this.dataSource.data = this.pos;
+            this.totalItems = this.pos.length;
+            this.snackBar.open(`PO ${po.numero_po} excluído com sucesso da planilha ${this.currentSheetName}!`, 'Fechar', { duration: 3000 });
+            // Se a fonte de dados for o servidor, pode ser necessário recarregar: this.loadDataForSheet();
+          },
+          error: (err: unknown) => {
+            this.isLoading = false;
+            const errorMessage = (err as any)?.message || 'Ocorreu um erro desconhecido.';
+            this.snackBar.open(`Erro ao excluir PO ${po.numero_po}: ${errorMessage}`, 'Fechar', { duration: 5000 });
+          }
+        });
+      }
+    });
   }
 
   onSortChange(event: any): void {
@@ -145,7 +155,7 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     'acoes' // Adicionar coluna de ações
   ];
 
-  dataSource = new MatTableDataSource<any>([]);
+  dataSource = new MatTableDataSource<Po>([]);
   filtro: string = '';
   filtro2: string = '';
   filtro3: string = '';
@@ -163,7 +173,9 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     private poService: PoService, 
     private http: HttpClient, 
     private router: Router,
-    private route: ActivatedRoute // Injete ActivatedRoute
+    private route: ActivatedRoute, // Injete ActivatedRoute
+    private dialog: MatDialog, // Injetar MatDialog
+    private snackBar: MatSnackBar // Injetar MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -172,12 +184,9 @@ export class PoListaComponent implements OnInit, AfterViewInit {
       const sheetNameParam = params.get('sheetName');
       if (sheetNameParam) {
         this.currentSheetName = sheetNameParam;
-        // Se desejar um nome padrão caso nenhum seja fornecido (embora a rota agora exija)
-        // this.currentSheetName = sheetNameParam || 'Oeste'; 
         this.loadDataForSheet();
       } else {
         // Tratar caso onde sheetName não está presente, talvez redirecionar ou carregar um padrão
-        console.error('SheetName não encontrado nos parâmetros da rota!');
         this.currentSheetName = 'Oeste'; // Fallback para Oeste ou outra lógica
         this.loadDataForSheet(); // Ou mostrar uma mensagem de erro
         // this.router.navigate(['/menu']); // Exemplo de redirecionamento
@@ -196,7 +205,6 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     }, _ => {
       this.isLoading = false;
       // Adicionar tratamento de erro mais robusto aqui
-      console.error(`Erro ao carregar dados para a aba: ${this.currentSheetName}`);
     });
   }
 
@@ -233,15 +241,13 @@ export class PoListaComponent implements OnInit, AfterViewInit {
 
   buscarNaGoogleSheets(filtroPrincipal: string) {
     if (!this.currentSheetName) {
-      console.error("Nome da aba atual não definido para busca.");
+      this.snackBar.open('Contexto da planilha não definido para busca.', 'Fechar', { duration: 3000 });
       return;
     }
     this.isLoading = true;
     this.poService.listar(this.currentSheetName, filtroPrincipal).subscribe(
       pos => {
         let dadosFiltrados = pos;
-
-        // Aplicar filtros adicionais sequencialmente
         if (this.filtro2) {
           dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro2));
         }
@@ -251,13 +257,13 @@ export class PoListaComponent implements OnInit, AfterViewInit {
         if (this.filtro4) {
           dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro4));
         }
-
         this.dataSource.data = dadosFiltrados;
         this.totalItems = dadosFiltrados.length;
         this.isLoading = false;
       },
-      _ => {
+      error => {
         this.isLoading = false;
+        this.snackBar.open(`Erro ao buscar dados na planilha ${this.currentSheetName}.`, 'Fechar', { duration: 3000 });
       }
     );
   }
@@ -290,6 +296,11 @@ export class PoListaComponent implements OnInit, AfterViewInit {
   }
 
   adicionarPo() {
-    this.router.navigate(['/novo-po']);
+    if (!this.currentSheetName) {
+      this.snackBar.open('Contexto da planilha não definido. Não é possível adicionar novo PO.', 'Fechar', { duration: 3000 });
+      return;
+    }
+    // Navegar para a rota de novo PO, passando o sheetName
+    this.router.navigate(['/formulario-po', this.currentSheetName]);
   }
 }

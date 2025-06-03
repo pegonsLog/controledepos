@@ -3,12 +3,12 @@
     <mat-spinner></mat-spinner>
   </div>
 
-  <h2>{{ pageTitle }}</h2>
+  <h2>Alterar PO</h2>
   <form [formGroup]="poForm" (ngSubmit)="onSubmit()" class="po-form">
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Número da PO</mat-label>
-      <input matInput formControlName="numero_po" placeholder="Ex: PO-12345">
+      <input matInput formControlName="numero_po" placeholder="Ex: PO-12345" readonly>
       <mat-error *ngIf="poForm.get('numero_po')?.hasError('required')">
         Número da PO é obrigatório.
       </mat-error>
@@ -24,11 +24,7 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Tipo de Logradouro</mat-label>
-      <mat-select formControlName="tipo_logradouro">
-        <mat-option *ngFor="let tipo of tiposLogradouro$ | async" [value]="tipo">
-          {{ tipo }}
-        </mat-option>
-      </mat-select>
+      <input matInput formControlName="tipo_logradouro" placeholder="Ex: Rua">
       <mat-error *ngIf="poForm.get('tipo_logradouro')?.hasError('required')">
         Tipo de logradouro é obrigatório.
       </mat-error>
@@ -49,11 +45,7 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Analista</mat-label>
-      <mat-select formControlName="analista">
-        <mat-option *ngFor="let analista of analistas$ | async" [value]="analista">
-          {{ analista }}
-        </mat-option>
-      </mat-select>
+      <input matInput formControlName="analista" placeholder="Nome do analista">
       <mat-error *ngIf="poForm.get('analista')?.hasError('required')">
         Analista é obrigatório.
       </mat-error>
@@ -69,11 +61,7 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Funcionário Responsável</mat-label>
-      <mat-select formControlName="funcionario_responsavel">
-        <mat-option *ngFor="let funcionario of funcionariosResponsaveis$ | async" [value]="funcionario">
-          {{ funcionario }}
-        </mat-option>
-      </mat-select>
+      <input matInput formControlName="funcionario_responsavel" placeholder="Nome do funcionário">
       <mat-error *ngIf="poForm.get('funcionario_responsavel')?.hasError('required')">
         Funcionário responsável é obrigatório.
       </mat-error>
@@ -101,13 +89,10 @@
       <mat-label>Especificações</mat-label>
       <textarea matInput formControlName="especificacoes" placeholder="Requisitos técnicos..."></textarea>
     </mat-form-field>
+
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Situação</mat-label>
-      <mat-select formControlName="situacao">
-        <mat-option *ngFor="let situacao of situacoes$ | async" [value]="situacao">
-          {{ situacao }}
-        </mat-option>
-      </mat-select>
+      <input matInput formControlName="situacao" placeholder="Situação atual">
       <mat-error *ngIf="poForm.get('situacao')?.hasError('required')">
         Situação é obrigatória.
       </mat-error>
@@ -123,11 +108,7 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Tipo de Solicitante</mat-label>
-      <mat-select formControlName="tipo_solicitante">
-        <mat-option *ngFor="let tipo of tiposDeSolicitante$ | async" [value]="tipo">
-          {{ tipo }}
-        </mat-option>
-      </mat-select>
+      <input matInput formControlName="tipo_solicitante" placeholder="Tipo de solicitante">
       <mat-error *ngIf="poForm.get('tipo_solicitante')?.hasError('required')">
         Tipo de solicitante é obrigatório.
       </mat-error>
@@ -137,6 +118,7 @@
       <mat-label>Data Encerramento DRO</mat-label>
       <input matInput formControlName="data_enc_dro" placeholder="dd/mm/aa" mask="00/00/00">
     </mat-form-field>
+
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Número de Controle</mat-label>
       <input matInput formControlName="numero_controle" placeholder="Ex: CTRL-001">
@@ -149,13 +131,10 @@
 
     <div class="form-actions">
       <button mat-raised-button color="primary" type="submit" [disabled]="!poForm.valid || isLoading">
-        {{ isEditMode ? 'Atualizar PO' : 'Salvar PO' }}
+        Atualizar PO
       </button>
       <button mat-stroked-button type="button" (click)="cancelar()" [disabled]="isLoading" style="margin-left: 8px;">
         Voltar para Lista
-      </button>
-      <button mat-stroked-button color="warn" type="button" (click)="poForm.reset()" [disabled]="isLoading || isEditMode" style="margin-left: 8px;">
-        Limpar
       </button>
     </div>
 

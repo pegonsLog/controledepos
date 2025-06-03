@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Po } from '../modelos/po';
-import { Observable } from 'rxjs';
+import { Po } from '../modelos/po'; // Supondo que a interface Po esteja correta
+import { Observable, of } from 'rxjs';
 import { GoogleSheetsService } from './google-sheets.service';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -11,45 +11,95 @@ export class PoService {
 
   constructor(private googleSheetsService: GoogleSheetsService) {}
 
-  listar(sheetName: string, filtro: string = ''): Observable<Po[]> {
-    // Aqui você pode adaptar para buscar de uma aba específica, se necessário
-    // Exemplo: return this.googleSheetsService.getSheetData('Oeste!A:Z')
-    // e mapear para Po[]
-    // Supondo que haja um método público para buscar dados brutos; caso contrário, altere getSheetData para public
-    return this.googleSheetsService.getSheetData(`${sheetName}!A:Z`).pipe(
-      // Adaptar o mapeamento conforme o formato dos dados retornados
-      // Supondo que a primeira linha seja o cabeçalho
-      map((dados: any[]) => {
-        if (!dados || dados.length < 2) {
-          return [];
-        }
-        const [cabecalho, ...linhas] = dados;
+  private normalizeHeader(header: string): string {
+    if (!header) return '';
+    return header
+      .normalize("NFD") // Decompõe caracteres acentuados (e.g., 'ú' -> 'u' + '´')
+      .replace(/[\u0300-\u036f]/g, "") // Remove os diacríticos (acentos)
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_") // Substitui espaços por underscores
+      .replace(/[^a-z0-9_]/g, ""); // Remove quaisquer caracteres restantes que não sejam letras minúsculas, números ou underscore
+  }
 
-        const pos: Po[] = linhas.map((linha, index) => {
-          const po: any = {};
-          cabecalho.forEach((campo: string, i: number) => {
-            po[campo] = linha[i];
-          });
-          return po as Po;
-        });
-        const posFiltrados = !filtro ? pos : pos.filter(item =>
+  private mapSheetDataToPos(dados: any[][]): Po[] {
+    if (!dados || dados.length < 2) {
+      return [];
+    }
+    const [cabecalhoOriginal, ...linhas] = dados;
+    // Normaliza todos os cabeçalhos primeiro
+    const cabecalho = cabecalhoOriginal.map(h => this.normalizeHeader(h));
+
+    const pos: Po[] = linhas.map((linha) => {
+      const po: any = {};
+      cabecalho.forEach((key: string, i: number) => {
+        // Se a normalização resultar em uma chave vazia (ex: coluna com apenas símbolos especiais), ignora.
+        if (key) {
+          po[key] = linha[i] !== undefined ? linha[i] : null;
+        }
+      });
+      return po as Po;
+    }).filter(po => po.numero_po); // Garante que apenas POs com numero_po sejam retornados
+    return pos;
+  }
+
+  listar(sheetName: string, filtro: string = ''): Observable<Po[]> {
+    return this.googleSheetsService.getPoSheetData(`${sheetName}!A:Z`).pipe(
+      map((dados: any[][]) => {
+        const pos = this.mapSheetDataToPos(dados);
+        if (!filtro) {
+          return pos;
+        }
+        return pos.filter(item =>
           Object.values(item).some(valor =>
             valor && valor.toString().toLowerCase().includes(filtro.trim().toLowerCase())
           )
         );
-        return posFiltrados;
+      }),
+      catchError(error => {
+        console.error(`Erro ao listar POs da aba ${sheetName}:`, error);
+        return of([]); // Retorna array vazio em caso de erro
       })
     );
   }
 
-  // Métodos para adicionar/atualizar POs podem ser implementados aqui caso você exponha um endpoint customizado
-  // ou use um App Script no Google Sheets. Caso contrário, a API pública só permite leitura.
+  getPoByNumeroPo(numero_po: string, sheetName: string): Observable<Po | undefined> {
+    return this.listar(sheetName).pipe(
+      map(pos => pos.find(p => p.numero_po === numero_po))
+    );
+  }
+
+  adicionarPo(po: Po, sheetName: string): Observable<any> {
+    // O GoogleSheetsService.addSheetData espera o objeto PO
+    // O App Script precisará saber como mapear isso para as colunas da planilha
+    return this.googleSheetsService.addSheetData(po, sheetName).pipe(
+      catchError(error => {
+        console.error(`Erro ao adicionar PO na aba ${sheetName}:`, error);
+        throw error; // Re-throw para ser tratado no componente
+      })
+    );
+  }
+
+  atualizarPo(po: Po, sheetName: string): Observable<any> {
+    if (!po.numero_po) {
+      console.error('Número do PO é necessário para atualização.');
+      return of({ error: 'Número do PO não fornecido.' }); // Ou lançar um erro
+    }
+    // O GoogleSheetsService.updateSheetData espera o objeto PO e o numero_po como identificador
+    return this.googleSheetsService.updateSheetData(po, sheetName, po.numero_po).pipe(
+      catchError(error => {
+        console.error(`Erro ao atualizar PO ${po.numero_po} na aba ${sheetName}:`, error);
+        throw error; // Re-throw para ser tratado no componente
+      })
+    );
+  }
 
   excluir(numero_po: string, sheetName: string): Observable<any> {
-    // TODO: Implementar o método 'deleteSheetDataByPoNumber' no GoogleSheetsService.
-    // Este método no GoogleSheetsService deverá chamar o App Script para excluir a linha.
-    // O App Script precisará localizar a linha pelo numero_po e então deletá-la.
-    // O range 'Oeste!A:Z' é um exemplo, ajuste conforme necessário.
-    return this.googleSheetsService.deleteSheetDataByPoNumber(numero_po, sheetName);
+    return this.googleSheetsService.deleteSheetDataByPoNumber(numero_po, sheetName).pipe(
+      catchError(error => {
+        console.error(`Erro ao excluir PO ${numero_po} na aba ${sheetName}:`, error);
+        throw error; // Re-throw para ser tratado no componente
+      })
+    );
   }
 }

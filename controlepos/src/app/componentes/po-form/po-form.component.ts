@@ -1,46 +1,50 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
+import { switchMap, catchError, tap } from 'rxjs/operators';
 import { Po } from '../../modelos/po';
 import { GoogleSheetsService } from '../../services/google-sheets.service';
 import { PoService } from '../../services/po.service';
 
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Importar
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 @Component({
   selector: 'app-po-form',
   standalone: true,
-  imports: [ 
+  imports: [
     CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
-    MatDatepickerModule,
-    MatMomentDateModule,
     MatButtonModule,
-    MatSelectModule
+    MatSelectModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule, // Adicionar
+    NgxMaskDirective
   ],
   templateUrl: './po-form.component.html',
   styleUrls: ['./po-form.component.scss'],
+  providers: [provideNgxMask()]
 })
-export class PoFormComponent implements OnInit {
+export class PoFormComponent implements OnInit, OnDestroy {
   poForm!: FormGroup;
   isEditMode = false;
-  poAtual: Po | null = null;
   currentPoNumero: string | null = null;
+  sheetName: string | null = null; // Para armazenar o nome da aba (Oeste/Barreiro)
   pageTitle = 'Novo PO';
   isLoading = false;
+  private routeSubscription: Subscription | undefined;
+  private poSubscription: Subscription | undefined;
 
-  // Observables para os dropdowns
   tiposLogradouro$!: Observable<string[]>;
   analistas$!: Observable<string[]>;
   funcionariosResponsaveis$!: Observable<string[]>;
@@ -52,16 +56,41 @@ export class PoFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private googleSheetsService: GoogleSheetsService,
-    private poService: PoService
-  ) { }
+    private poService: PoService,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
-    this.currentPoNumero = this.route.snapshot.paramMap.get('numero_po');
-    this.isEditMode = !!this.currentPoNumero;
-    this.pageTitle = this.isEditMode ? 'Alterar PO' : 'Adicionar PO';
+    this.isLoading = true;
+    this.routeSubscription = this.route.paramMap.subscribe(params => {
+      this.currentPoNumero = params.get('numero_po'); // Pode ser 'numero_po' ou 'id', ajuste conforme suas rotas
+      this.sheetName = params.get('sheetName');
 
+      if (!this.sheetName) {
+        console.error('SheetName não encontrado nos parâmetros da rota!');
+        this.snackBar.open('Erro: Contexto da planilha (Oeste/Barreiro) não definido.', 'Fechar', { duration: 5000 });
+        this.isLoading = false;
+        this.router.navigate(['/']); // Navega para uma rota padrão ou de erro
+        return;
+      }
+
+      this.isEditMode = !!this.currentPoNumero;
+      this.pageTitle = this.isEditMode ? `Alterar PO (${this.sheetName})` : `Adicionar PO (${this.sheetName})`;
+      this.initializeForm();
+
+      if (this.isEditMode && this.currentPoNumero) {
+        this.loadPoData(this.currentPoNumero, this.sheetName);
+      } else {
+        this.isLoading = false;
+      }
+    });
+
+    this.loadDropdownData();
+  }
+
+  private initializeForm(): void {
     this.poForm = this.fb.group({
-      numero_po: [{value: '', disabled: this.isEditMode}, Validators.required], 
+      numero_po: [{ value: '', disabled: this.isEditMode }, Validators.required],
       data_po: ['', Validators.required],
       tipo_logradouro: ['', Validators.required],
       logradouro: ['', Validators.required],
@@ -76,68 +105,191 @@ export class PoFormComponent implements OnInit {
       situacao: ['', Validators.required],
       solicitante: ['', Validators.required],
       tipo_solicitante: ['', Validators.required],
-      data_enc_dro: ['', Validators.required],
+      data_enc_dro: [''], // Não obrigatório
       numero_controle: [''],
-      data_arquivamento: ['', Validators.required],
+      data_arquivamento: [''], // Não obrigatório
+      // Adicione aqui os campos 'criado_em' e 'ultima_edicao' se precisar gerenciá-los no form,
+      // mas geralmente são gerenciados pelo backend/AppScript.
+      // criado_em: [{ value: '', disabled: true }],
+      // ultima_edicao: [{ value: '', disabled: true }]
     });
-
-    // Carregar dados para os dropdowns
-    this.tiposLogradouro$ = this.googleSheetsService.getTiposLogradouro();
-    this.analistas$ = this.googleSheetsService.getAnalistas();
-    this.funcionariosResponsaveis$ = this.googleSheetsService.getFuncionariosResponsaveis();
-    this.situacoes$ = this.googleSheetsService.getSituacoes();
-    this.tiposDeSolicitante$ = this.googleSheetsService.getTiposDeSolicitante();
-
-    // Se necessário, carregue dados de outra fonte aqui.
   }
 
-  private patchDateFields(po: Po): void {
-    const dateFields: (keyof Po)[] = ['data_po', 'data_implantacao', 'data_enc_dro', 'data_arquivamento'];
-    const patch: { [key: string]: any } = {};
-    dateFields.forEach(field => {
-      const value = po[field];
-      if (typeof value === 'string' && value) {
-        let date = this.parseYYYYMMDD(value);
-        if (date && !isNaN(date.getTime())) {
-          patch[field] = date; 
+  private loadDropdownData(): void {
+    this.tiposLogradouro$ = this.googleSheetsService.getTiposLogradouro().pipe(
+      tap(data => console.log('Opções - Tipos de Logradouro:', JSON.stringify(data)))
+    );
+    this.analistas$ = this.googleSheetsService.getAnalistas().pipe(
+      tap(data => console.log('Opções - Analistas:', JSON.stringify(data)))
+    );
+    this.funcionariosResponsaveis$ = this.googleSheetsService.getFuncionariosResponsaveis().pipe(
+      tap(data => console.log('Opções - Funcionários Responsáveis:', JSON.stringify(data)))
+    );
+    this.situacoes$ = this.googleSheetsService.getSituacoes().pipe(
+      tap(data => console.log('Opções - Situações:', JSON.stringify(data)))
+    );
+    this.tiposDeSolicitante$ = this.googleSheetsService.getTiposDeSolicitante().pipe(
+      tap(data => console.log('Opções - Tipos de Solicitante:', JSON.stringify(data)))
+    );
+  }
+
+  private loadPoData(numero_po: string, sheetName: string): void {
+    this.isLoading = true;
+    this.poSubscription = this.poService.getPoByNumeroPo(numero_po, sheetName).pipe(
+      tap(po => {
+        if (po) {
+          // Converte as strings de data 'YYYY-MM-DD' para objetos Date antes de popular o formulário
+          const poWithDatesAsObjects: any = { ...po };
+          const dateFields: (keyof Po)[] = ['data_po', 'data_implantacao', 'data_enc_dro', 'data_arquivamento'];
+          
+          dateFields.forEach(field => {
+            const dateValue = po[field];
+            if (typeof dateValue === 'string' && dateValue) {
+              poWithDatesAsObjects[field] = this.parseYYYYMMDDToDate(dateValue);
+            }
+          });
+          // Remove espaços extras dos campos relevantes
+          if (typeof poWithDatesAsObjects.tipo_logradouro === 'string') {
+            poWithDatesAsObjects.tipo_logradouro = poWithDatesAsObjects.tipo_logradouro.trim();
+          }
+          if (typeof poWithDatesAsObjects.tipo_solicitante === 'string') {
+            poWithDatesAsObjects.tipo_solicitante = poWithDatesAsObjects.tipo_solicitante.trim();
+          }
+
+          console.log('Dados do PO para o formulário (loadPoData DEPOIS DO TRIM):', JSON.stringify(poWithDatesAsObjects));
+          console.log('Valor para Analista (do PO):', poWithDatesAsObjects.analista);
+          console.log('Valor para Situação (do PO):', poWithDatesAsObjects.situacao);
+          console.log('Valor para Tipo Logradouro (do PO DEPOIS DO TRIM):', poWithDatesAsObjects.tipo_logradouro);
+          console.log('Valor para Funcionário Responsável (do PO):', poWithDatesAsObjects.funcionario_responsavel);
+          console.log('Valor para Tipo Solicitante (do PO DEPOIS DO TRIM):', poWithDatesAsObjects.tipo_solicitante);
+          this.poForm.patchValue(poWithDatesAsObjects);
+        } else {
+          this.snackBar.open(`PO com número ${numero_po} não encontrado na planilha ${sheetName}.`, 'Fechar', { duration: 3000 });
+          this.router.navigate([`/lista-pos/${this.sheetName}`]);
         }
-      }
+      }),
+      catchError(err => {
+        console.error('Erro ao carregar PO:', err);
+        this.snackBar.open('Erro ao carregar dados do PO.', 'Fechar', { duration: 3000 });
+        this.isLoading = false;
+        return of(null); // Retorna um observable nulo para completar a cadeia
+      })
+    ).subscribe(() => {
+      this.isLoading = false;
     });
-    if (Object.keys(patch).length > 0) {
-      this.poForm.patchValue(patch);
-    }
   }
 
-  private parseYYYYMMDD(dateString: string): Date | null {
+  // Converte string 'YYYY-MM-DD' para objeto Date
+  private parseYYYYMMDDToDate(dateString: string): Date | null {
+    if (!dateString) return null;
     const parts = dateString.split('-');
     if (parts.length === 3) {
       const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; 
+      const month = parseInt(parts[1], 10) - 1; // Mês é 0-indexado no Date
       const day = parseInt(parts[2], 10);
-      const date = new Date(year, month, day);
-      if (!isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
-        return date;
+      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+        const date = new Date(Date.UTC(year, month, day)); // Usar UTC para evitar problemas de fuso
+         if (date.getUTCFullYear() === year && date.getUTCMonth() === month && date.getUTCDate() === day) {
+            return date;
+        }
       }
     }
+    console.warn(`Formato de data inválido recebido: ${dateString}. Esperado YYYY-MM-DD.`);
     return null;
+  }
+
+  private parseToDisplayFormat(dateYMD: string | undefined): string {
+    if (!dateYMD) return '';
+    const parts = dateYMD.split('-'); // YYYY-MM-DD
+    if (parts.length === 3) {
+      const year = parts[0].slice(-2); // Pega os últimos 2 dígitos do ano
+      return `${parts[2]}/${parts[1]}/${year}`; // dd/MM/yy
+    }
+    return dateYMD; // Retorna o original se não estiver no formato esperado
+  }
+
+  private parseToModelFormat(dateDMY: string | undefined): string {
+    if (!dateDMY) return '';
+    const parts = dateDMY.split('/'); // dd/MM/yy
+    if (parts.length === 3) {
+      // Assume que 'yy' se refere ao século 21 (20xx)
+      const year = parseInt(parts[2], 10) < 70 ? `20${parts[2]}` : `19${parts[2]}`; // Simples heurística para século
+      return `${year}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`; // YYYY-MM-DD
+    }
+    return dateDMY; // Retorna o original se não estiver no formato esperado
   }
 
   onSubmit(): void {
     if (this.poForm.invalid) {
-      console.log('Formulário inválido');
       this.poForm.markAllAsTouched();
+      this.snackBar.open('Por favor, corrija os erros no formulário.', 'Fechar', { duration: 3000 });
       return;
     }
+    if (!this.sheetName) {
+      this.snackBar.open('Contexto da planilha (Oeste/Barreiro) não definido. Não é possível salvar.', 'Fechar', { duration: 5000 });
+      return;
+    }
+
     this.isLoading = true;
-    const formValue = this.poForm.getRawValue(); 
-    // Aqui você pode implementar a lógica local de salvamento, ou apenas mostrar os dados no console:
-    console.log('Dados do formulário salvos:', formValue);
-    alert('PO salvo localmente!');
-    this.isLoading = false;
-    this.router.navigate(['/lista-pos']);
+    const rawFormValue = this.poForm.getRawValue(); // Inclui campos desabilitados (como numero_po em edição)
+    
+    // Formata as datas para string antes de enviar
+    const poData: Po = {
+      ...rawFormValue,
+      data_po: this.parseToModelFormat(rawFormValue.data_po),
+      data_implantacao: this.parseToModelFormat(rawFormValue.data_implantacao),
+      data_enc_dro: this.parseToModelFormat(rawFormValue.data_enc_dro),
+      data_arquivamento: this.parseToModelFormat(rawFormValue.data_arquivamento),
+      // Se numero_po é desabilitado e não vem no rawFormValue em edicao, pega do currentPoNumero
+      numero_po: this.isEditMode && this.currentPoNumero ? this.currentPoNumero : rawFormValue.numero_po
+    };
+
+    // Adiciona/atualiza timestamps se o AppScript não fizer isso
+    // poData.ultima_edicao = new Date().toISOString();
+    // if (!this.isEditMode) {
+    //   poData.criado_em = new Date().toISOString();
+    // }
+
+
+    let operation$: Observable<any>;
+
+    if (this.isEditMode) {
+      operation$ = this.poService.atualizarPo(poData, this.sheetName);
+    } else {
+      operation$ = this.poService.adicionarPo(poData, this.sheetName);
+    }
+
+    this.poSubscription = operation$.pipe(
+      catchError(err => {
+        console.error('Erro ao salvar PO:', err);
+        this.snackBar.open(`Erro ao salvar PO: ${err.message || 'Erro desconhecido.'}`, 'Fechar', { duration: 5000 });
+        this.isLoading = false;
+        return of(null); // Para completar a cadeia e evitar que o complete não seja chamado
+      })
+    ).subscribe(response => {
+      this.isLoading = false;
+      if (response && response !== null) { // Verifica se não houve erro (null retornado pelo catchError)
+        this.snackBar.open(`PO ${this.isEditMode ? 'atualizado' : 'adicionado'} com sucesso!`, 'Fechar', { duration: 3000 });
+        this.router.navigate([`/lista-pos/${this.sheetName}`]);
+      }
+    });
   }
 
   cancelar(): void {
-    this.router.navigate(['/lista-pos']);
+    if (this.sheetName) {
+      this.router.navigate([`/lista-pos/${this.sheetName}`]);
+    } else {
+      // Fallback se sheetName não estiver definido, embora a guarda no ngOnInit deva prevenir isso.
+      this.router.navigate(['/']);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.routeSubscription) {
+      this.routeSubscription.unsubscribe();
+    }
+    if (this.poSubscription) {
+      this.poSubscription.unsubscribe();
+    }
   }
 }
