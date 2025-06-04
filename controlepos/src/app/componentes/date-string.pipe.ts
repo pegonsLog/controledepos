@@ -6,14 +6,27 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class DateStringPipe implements PipeTransform {
   transform(value: string | null | undefined): string {
-    if (!value || typeof value !== 'string' || value.length !== 8 || !/^\d{8}$/.test(value)) {
-      // Retorna o valor original (ou um placeholder) se não for uma string de 8 dígitos.
-      // Se o valor pode ser null/undefined e você quer exibir '-', ajuste aqui.
-      return value || '-'; 
+    if (!value || typeof value !== 'string') {
+      return value || '-'; // Retorna o valor original ou '-' se for nulo/undefined/não string
     }
-    const day = value.substring(0, 2);
-    const month = value.substring(2, 4);
-    const year = value.substring(4, 8);
-    return `${day}/${month}/${year}`;
+
+    // Tenta formatar como DD/MM/YY para strings de 6 dígitos (DDMMYY)
+    if (value.length === 6 && /^\d{6}$/.test(value)) {
+      const day = value.substring(0, 2);
+      const month = value.substring(2, 4);
+      const year = value.substring(4, 6); // YY
+      return `${day}/${month}/${year}`;
+    }
+
+    // Tenta formatar como DD/MM/YYYY para strings de 8 dígitos (DDMMYYYY)
+    if (value.length === 8 && /^\d{8}$/.test(value)) {
+      const day = value.substring(0, 2);
+      const month = value.substring(2, 4);
+      const year = value.substring(4, 8); // YYYY
+      return `${day}/${month}/${year}`;
+    }
+
+    // Se não corresponder a nenhum formato esperado, retorna o valor original
+    return value;
   }
 }

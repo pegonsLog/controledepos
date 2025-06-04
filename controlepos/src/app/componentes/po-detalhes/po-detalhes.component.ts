@@ -56,8 +56,10 @@ export class PoDetalhesComponent implements OnInit {
           this.isLoading = false;
           if (!this.po) {
             console.error(`PO com número ${numeroPo} não encontrado na aba ${this.currentSheetName}.`);
-            // this.router.navigate(['/lista-pos', this.currentSheetName]);
+          } else {
+            console.log('Dados do PO carregado:', JSON.stringify(this.po)); // Log para depuração
           }
+          // this.router.navigate(['/lista-pos', this.currentSheetName]);
         }, error => {
           console.error('Erro ao buscar POs:', error);
           this.isLoading = false;
@@ -72,11 +74,11 @@ export class PoDetalhesComponent implements OnInit {
 
   voltarParaLista(): void {
     if (this.currentSheetName) {
-      this.router.navigate(['/lista-pos', this.currentSheetName]);
+      this.router.navigate(['/po-lista', this.currentSheetName]);
     } else {
       // Fallback se currentSheetName não estiver definido, embora não devesse acontecer
       console.warn('currentSheetName não definido ao voltar para lista, usando rota padrão.');
-      this.router.navigate(['/lista-pos', 'Oeste']); // Ou para /menu
+      this.router.navigate(['/po-lista', 'Oeste']); // Ou para /menu ou uma rota de erro mais genérica
     }
   }
 }

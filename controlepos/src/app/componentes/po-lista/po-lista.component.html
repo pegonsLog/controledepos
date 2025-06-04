@@ -45,7 +45,7 @@
         </mat-form-field>
       </div> <!-- Fim da nova div .filter-inputs-wrapper -->
   
-      <button mat-raised-button color="primary" (click)="adicionarPo()" class="action-button filter-add-button"> <!-- Adicionada classe opcional para o botão -->
+      <button *ngIf="isAdminUser" mat-raised-button color="primary" (click)="adicionarPo()" class="action-button filter-add-button"> <!-- Adicionada classe opcional para o botão -->
         Adicionar PO
         <mat-icon>add</mat-icon>
       </button>
@@ -159,7 +159,7 @@
           <!-- Coluna Data Enc. DRO -->
           <ng-container matColumnDef="data_enc_dro">
             <th mat-header-cell *matHeaderCellDef>Data Enc. DRO</th>
-            <td mat-cell *matCellDef="let po">{{ po.data_encerramento_dro | dateString }}</td>
+            <td mat-cell *matCellDef="let po">{{ po.data_enc_dro | dateString }}</td>
           </ng-container>
 
           <!-- Coluna Nº de Controle -->
@@ -176,15 +176,15 @@
 
           <!-- Coluna Ações -->
           <ng-container matColumnDef="acoes">
-            <th mat-header-cell *matHeaderCellDef class="text-right">Ações</th>
-            <td mat-cell *matCellDef="let po" class="text-right">
+            <th mat-header-cell *matHeaderCellDef class="text-center">Ações</th>
+            <td mat-cell *matCellDef="let po" class="text-center">
               <button mat-icon-button class="orange-icon" (click)="visualizarPo(po)" matTooltip="Visualizar PO">
                 <mat-icon>visibility</mat-icon>
               </button>
-              <button mat-icon-button class="green-icon" (click)="alterarPo(po)" matTooltip="Alterar PO">
+              <button *ngIf="isAdminUser" mat-icon-button class="green-icon" (click)="alterarPo(po)" matTooltip="Alterar PO">
                 <mat-icon>edit</mat-icon> 
               </button>
-                <button mat-icon-button class="action-button-delete" (click)="deletarPo(po)" matTooltip="Deletar PO">
+                <button *ngIf="isAdminUser" mat-icon-button class="action-button-delete" (click)="deletarPo(po)" matTooltip="Deletar PO">
                 <mat-icon>delete</mat-icon>
               </button>
             </td>
@@ -196,7 +196,7 @@
             [class.selected-row]="isSelected(row)"></tr>
         </table>
 
-        <mat-paginator [pageSizeOptions]="[5, 10, 20]" [pageSize]="pageSize" [length]="totalItems"
+        <mat-paginator [pageSizeOptions]="[5, 10, 20, 50, 100]" [pageSize]="pageSize" [length]="totalItems"
           (page)="onPageChange($event)" showFirstLastButtons>
         </mat-paginator>
       </div>

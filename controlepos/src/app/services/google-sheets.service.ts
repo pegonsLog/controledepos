@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, of } from 'rxjs';
+import { Usuario } from '../modelos/usuario';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -12,6 +13,8 @@ export class GoogleSheetsService {
   private poSheetId = '1AQjzxBPFKxwfAGolCxvzOEcQBs5Z-0yKUKIxsjDXdAI';
   // ID da planilha para dados dos dropdowns
   private dropdownSheetId = '15EzKn5iyziiURj7awjLVtMRYE1swOwdRUpy2Pikr-_k';
+  // ID da planilha para dados dos usuários
+  private usuariosSheetId = '1QR2knxBd_fzNklKZzPRaEw_8Sc00CLnbGJuk-9Hcj9U';
 
   // URL do Google App Script (substitua pela sua URL de implantação)
   private appScriptUrl = 'https://script.google.com/macros/s/AKfycbw7OGaLufFYdha5QQr5bjSZceJi5M4pJfpgTSi8QycjyTL7zNKqQK27t7y5P-6WKc1-/exec';
@@ -74,6 +77,28 @@ export class GoogleSheetsService {
 
   getTiposDeSolicitante(): Observable<string[]> {
     return this.getDropdownData('Solicitante');
+  }
+
+  public getUsuarios(): Observable<Usuario[]> {
+    // Assume que a aba se chama 'Usuarios' e as colunas são: usuario, nome, senha, perfil
+    const range = 'Usuarios!A:D'; // Busca as colunas A (usuario), B (nome), C (senha), D (perfil)
+    return this._getSheetData(this.usuariosSheetId, range).pipe(
+      map(data => {
+        if (!data || data.length < 2) { // Precisa de pelo menos cabeçalho e uma linha de dados
+          return [];
+        }
+        // Ignora a primeira linha (cabeçalho)
+        const usuariosData = data.slice(1);
+        return usuariosData.map(row => {
+          return {
+            usuario: row[0],
+            nome: row[1],
+            senha: row[2],
+            perfil: row[3]
+          } as Usuario;
+        }).filter(u => u.usuario && u.senha && u.perfil); // Filtra linhas incompletas
+      })
+    );
   }
 
   // Operações de escrita/deleção via App Script

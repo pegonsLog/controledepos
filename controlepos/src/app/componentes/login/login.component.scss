@@ -1,0 +1,55 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+
+  .login-title-box { // Estilos para a caixa do título
+    font-family: 'Montserrat', sans-serif;
+    width: 100%;
+    max-width: 400px; // Para alinhar com a largura do formulário
+    background-color: #dce9f3; // Cor de fundo do header do po-lista
+    color: #3f51b5;           // Cor do texto do header do po-lista
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    box-sizing: border-box;
+    padding: 12px 0; // Padding vertical para a caixa
+    margin-bottom: 24px; // Espaço abaixo da caixa do título
+
+    h2 {
+      font-size: 1.6em;  // Ajuste no tamanho da fonte para a caixa
+      color: inherit;    // Herda a cor de .login-title-box
+      margin: 0;         // Remove margens padrão do h2
+      font-weight: 500;  // Peso da fonte
+    }
+  }
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px; // Limita a largura do formulário
+
+    mat-form-field {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    .login-button {
+      width: 100%;
+      height: 50px; // Altura do botão
+      font-family: 'Montserrat', sans-serif; // Consistente com o menu
+    }
+  }
+
+  .login-progress-bar {
+    width: 100%;
+    max-width: 400px; // Mesma largura do formulário
+    margin-top: 20px; // Espaço acima da barra de progresso
+  }
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -45,7 +45,7 @@ export class PdfListComponent implements OnInit, AfterViewInit {
   tituloRegional: string = '';
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  constructor(private pdfService: PdfService, private router: Router, private route: ActivatedRoute) { }
+  constructor(private pdfService: PdfService, private router: Router, private route: ActivatedRoute, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.loading = true;
@@ -60,9 +60,10 @@ export class PdfListComponent implements OnInit, AfterViewInit {
             this.searchTerm2 = '';
             this.searchTerm3 = '';
             this.searchTerm4 = '';
-            this.filterPdfFiles();
-            if (this.paginator) { // Ensure paginator is available before assigning
-              this.dataSource.paginator = this.paginator;
+            this.filterPdfFiles(); // Atualiza dataSource.data
+            if (this.paginator) { // Se ngAfterViewInit já tornou o paginator disponível
+              this.dataSource.paginator = this.paginator; // Reatribui para garantir
+              this.cdr.detectChanges(); // Força a detecção de mudanças
             }
             this.loading = false;
           },
@@ -78,6 +79,11 @@ export class PdfListComponent implements OnInit, AfterViewInit {
         this.loading = false;
       }
     });
+  }
+
+  limparFiltro(filtro: 'searchTerm' | 'searchTerm2' | 'searchTerm3' | 'searchTerm4'): void {
+    this[filtro] = '';
+    this.filterPdfFiles();
   }
 
   filterPdfFiles(): void {
@@ -101,8 +107,12 @@ export class PdfListComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (this.dataSource) { // Garante que dataSource exista
-        this.dataSource.paginator = this.paginator;
+    console.log('PdfListComponent ngAfterViewInit - this.paginator:', this.paginator);
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+      this.cdr.detectChanges(); // Força a detecção de mudanças
+    } else {
+      console.error('PdfListComponent ngAfterViewInit - Paginator NÃO encontrado!');
     }
   }
 }

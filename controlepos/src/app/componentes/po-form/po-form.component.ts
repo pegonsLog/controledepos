@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, Subscription, of } from 'rxjs';
-import { switchMap, catchError, tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { Po } from '../../modelos/po';
 import { GoogleSheetsService } from '../../services/google-sheets.service';
 import { PoService } from '../../services/po.service';
@@ -92,19 +92,19 @@ export class PoFormComponent implements OnInit, OnDestroy {
     this.poForm = this.fb.group({
       numero_po: [{ value: '', disabled: this.isEditMode }, Validators.required],
       data_po: ['', Validators.required],
-      tipo_logradouro: ['', Validators.required],
+      tipo_logradouro: [''],
       logradouro: ['', Validators.required],
       complemento: [''],
       detalhamento: [''],
-      analista: ['', Validators.required],
-      data_implantacao: ['', Validators.required],
-      funcionario_responsavel: ['', Validators.required],
-      bairro: ['', Validators.required],
+      analista: [''],
+      data_implantacao: [''],
+      funcionario_responsavel: [''],
+      bairro: [''],
       observacoes: [''],
       especificacoes: [''],
-      situacao: ['', Validators.required],
-      solicitante: ['', Validators.required],
-      tipo_solicitante: ['', Validators.required],
+      situacao: [''],
+      solicitante: [''],
+      tipo_solicitante: [''],
       data_enc_dro: [''], // Não obrigatório
       numero_controle: [''],
       data_arquivamento: [''], // Não obrigatório
@@ -117,19 +117,34 @@ export class PoFormComponent implements OnInit, OnDestroy {
 
   private loadDropdownData(): void {
     this.tiposLogradouro$ = this.googleSheetsService.getTiposLogradouro().pipe(
-      tap(data => console.log('Opções - Tipos de Logradouro:', JSON.stringify(data)))
+      catchError(error => { 
+        this.snackBar.open('Erro ao carregar tipos de logradouro', 'Fechar', { duration: 3000 });
+        return of([]);
+      })
     );
     this.analistas$ = this.googleSheetsService.getAnalistas().pipe(
-      tap(data => console.log('Opções - Analistas:', JSON.stringify(data)))
+      catchError(error => { 
+        this.snackBar.open('Erro ao carregar analistas', 'Fechar', { duration: 3000 });
+        return of([]);
+      })
     );
     this.funcionariosResponsaveis$ = this.googleSheetsService.getFuncionariosResponsaveis().pipe(
-      tap(data => console.log('Opções - Funcionários Responsáveis:', JSON.stringify(data)))
+      catchError(error => { 
+        this.snackBar.open('Erro ao carregar funcionários responsáveis', 'Fechar', { duration: 3000 });
+        return of([]);
+      })
     );
     this.situacoes$ = this.googleSheetsService.getSituacoes().pipe(
-      tap(data => console.log('Opções - Situações:', JSON.stringify(data)))
+      catchError(error => { 
+        this.snackBar.open('Erro ao carregar situações', 'Fechar', { duration: 3000 });
+        return of([]);
+      })
     );
     this.tiposDeSolicitante$ = this.googleSheetsService.getTiposDeSolicitante().pipe(
-      tap(data => console.log('Opções - Tipos de Solicitante:', JSON.stringify(data)))
+      catchError(error => { 
+        this.snackBar.open('Erro ao carregar tipos de solicitante', 'Fechar', { duration: 3000 });
+        return of([]);
+      })
     );
   }
 
@@ -156,12 +171,12 @@ export class PoFormComponent implements OnInit, OnDestroy {
             poWithDatesAsObjects.tipo_solicitante = poWithDatesAsObjects.tipo_solicitante.trim();
           }
 
-          console.log('Dados do PO para o formulário (loadPoData DEPOIS DO TRIM):', JSON.stringify(poWithDatesAsObjects));
-          console.log('Valor para Analista (do PO):', poWithDatesAsObjects.analista);
-          console.log('Valor para Situação (do PO):', poWithDatesAsObjects.situacao);
-          console.log('Valor para Tipo Logradouro (do PO DEPOIS DO TRIM):', poWithDatesAsObjects.tipo_logradouro);
-          console.log('Valor para Funcionário Responsável (do PO):', poWithDatesAsObjects.funcionario_responsavel);
-          console.log('Valor para Tipo Solicitante (do PO DEPOIS DO TRIM):', poWithDatesAsObjects.tipo_solicitante);
+          // console.log('Dados do PO para o formulário (loadPoData DEPOIS DO TRIM):', JSON.stringify(poWithDatesAsObjects));
+          // console.log('Valor para Analista (do PO):', poWithDatesAsObjects.analista);
+          // console.log('Valor para Situação (do PO):', poWithDatesAsObjects.situacao);
+          // console.log('Valor para Tipo Logradouro (do PO DEPOIS DO TRIM):', poWithDatesAsObjects.tipo_logradouro);
+          // console.log('Valor para Funcionário Responsável (do PO):', poWithDatesAsObjects.funcionario_responsavel);
+          // console.log('Valor para Tipo Solicitante (do PO DEPOIS DO TRIM):', poWithDatesAsObjects.tipo_solicitante);
           this.poForm.patchValue(poWithDatesAsObjects);
         } else {
           this.snackBar.open(`PO com número ${numero_po} não encontrado na planilha ${sheetName}.`, 'Fechar', { duration: 3000 });
@@ -270,14 +285,14 @@ export class PoFormComponent implements OnInit, OnDestroy {
       this.isLoading = false;
       if (response && response !== null) { // Verifica se não houve erro (null retornado pelo catchError)
         this.snackBar.open(`PO ${this.isEditMode ? 'atualizado' : 'adicionado'} com sucesso!`, 'Fechar', { duration: 3000 });
-        this.router.navigate([`/lista-pos/${this.sheetName}`]);
+        this.router.navigate([`/po-lista/${this.sheetName}`]);
       }
     });
   }
 
   cancelar(): void {
     if (this.sheetName) {
-      this.router.navigate([`/lista-pos/${this.sheetName}`]);
+      this.router.navigate([`/po-lista/${this.sheetName}`]);
     } else {
       // Fallback se sheetName não estiver definido, embora a guarda no ngOnInit deva prevenir isso.
       this.router.navigate(['/']);

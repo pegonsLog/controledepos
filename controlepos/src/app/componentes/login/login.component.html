@@ -1,0 +1,29 @@
+<div class="login-container">
+  <div class="login-title-box">
+    <h2>Login</h2>
+  </div>
+
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Usuário</mat-label>
+      <input matInput formControlName="usuario" placeholder="Digite seu usuário" required>
+      <mat-error *ngIf="loginForm.get('usuario')?.touched && loginForm.get('usuario')?.hasError('required')">
+        Usuário é obrigatório.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Senha</mat-label>
+      <input matInput formControlName="senha" type="password" placeholder="Digite sua senha" required>
+      <mat-error *ngIf="loginForm.get('senha')?.touched && loginForm.get('senha')?.hasError('required')">
+        Senha é obrigatória.
+      </mat-error>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="loading || loginForm.invalid" class="login-button">
+      {{ loading ? 'Entrando...' : 'Entrar' }}
+    </button>
+  </form>
+
+  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="login-progress-bar"></mat-progress-bar>
+</div>

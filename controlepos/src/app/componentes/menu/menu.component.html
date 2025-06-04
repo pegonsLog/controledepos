@@ -1,6 +1,7 @@
 <div class="menu-container">
-  <button mat-raised-button [routerLink]="['/lista-pos', 'Oeste']">POs Oeste</button>
-  <button mat-raised-button [routerLink]="['/lista-pos', 'Barreiro']">POs Barreiro</button>
-  <button mat-raised-button [routerLink]="['/pdfs', 'Oeste']">Lista de PDFs Oeste</button>
-  <button mat-raised-button [routerLink]="['/pdfs', 'Barreiro']">Lista de PDFs Barreiro</button>
+  <button mat-raised-button class="action-button-blue" [routerLink]="['/po-lista', 'Oeste']">POs Oeste</button>
+  <button mat-raised-button class="action-button-blue" [routerLink]="['/po-lista', 'Barreiro']">POs Barreiro</button>
+  <button mat-raised-button class="action-button-blue" [routerLink]="['/pdfs', 'Oeste']">Lista de PDFs Oeste</button>
+  <button mat-raised-button class="action-button-blue" [routerLink]="['/pdfs', 'Barreiro']">Lista de PDFs Barreiro</button>
+  <button mat-raised-button class="action-button" (click)="logout()">Sair</button>
 </div>

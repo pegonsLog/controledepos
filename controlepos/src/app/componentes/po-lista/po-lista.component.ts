@@ -7,6 +7,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Po } from '../../modelos/po';
 import { PoService } from '../../services/po.service';
+import { UsuarioService } from '../../services/usuario.service'; // Adicionado para controle de acesso
+import { CacheService } from '../../services/cache.service'; // Importar CacheService
 
 // Importe o ConfirmDialogComponent após criá-lo. Por enquanto, vamos simular sua existência.
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
@@ -54,6 +56,7 @@ import { DateStringPipe } from '../date-string.pipe';
   ]
 })
 export class PoListaComponent implements OnInit, AfterViewInit {
+  public isAdminUser = false; // Adicionado para controle de acesso
   isLoading: boolean = false;
   selectedRow: Po | null = null; // Para rastrear a linha selecionada
   pos: Po[] = [];
@@ -163,12 +166,7 @@ export class PoListaComponent implements OnInit, AfterViewInit {
   filtro2: string = '';
   filtro3: string = '';
   filtro4: string = '';
-  // planilhaAtual e planilhas não são mais necessários com a abordagem de rota
-  // planilhaAtual: number = 1;
-  // planilhas: Planilha[] = [
-  //   { nome: 'Oeste', dados: [] },
-  //   { nome: 'Barreiro', dados: [] }
-  // ];
+  
   currentSheetName: string = ''; // Para armazenar o nome da aba atual
   idDaPlanilha = '1AQjzxBPFKxwfAGolCxvzOEcQBs5Z-0yKUKIxsjDXdAI';
 
@@ -178,10 +176,13 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     private router: Router,
     private route: ActivatedRoute, // Injete ActivatedRoute
     private dialog: MatDialog, // Injetar MatDialog
-    private snackBar: MatSnackBar // Injetar MatSnackBar
+    private snackBar: MatSnackBar, // Injetar MatSnackBar
+    private usuarioService: UsuarioService, // Adicionado para controle de acesso
+    private cacheService: CacheService // Injetar CacheService
   ) {}
 
   ngOnInit() {
+    this.isAdminUser = this.usuarioService.isAdmin(); // Adicionado para controle de acesso
     this.isLoading = true;
     this.route.paramMap.subscribe(params => {
       const sheetNameParam = params.get('sheetName');
@@ -199,16 +200,8 @@ export class PoListaComponent implements OnInit, AfterViewInit {
 
   loadDataForSheet() {
     if (!this.currentSheetName) return;
-    this.isLoading = true;
-    this.poService.listar(this.currentSheetName, this.filtro).subscribe(pos => {
-      this.pos = pos;
-      this.dataSource.data = pos;
-      this.totalItems = pos.length;
-      this.isLoading = false;
-    }, _ => {
-      this.isLoading = false;
-      // Adicionar tratamento de erro mais robusto aqui
-    });
+    // Chama buscarNaGoogleSheets com filtro vazio para carregar dados iniciais (usando cache se disponível)
+    this.buscarNaGoogleSheets(''); 
   }
 
   ngAfterViewInit() {
@@ -242,33 +235,64 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     this.buscarNaGoogleSheets(this.filtro);
   }
 
-  buscarNaGoogleSheets(filtroPrincipal: string) {
+  async buscarNaGoogleSheets(filtroPrincipal: string) {
     if (!this.currentSheetName) {
       this.snackBar.open('Contexto da planilha não definido para busca.', 'Fechar', { duration: 3000 });
       return;
     }
     this.isLoading = true;
-    this.poService.listar(this.currentSheetName, filtroPrincipal).subscribe(
-      pos => {
-        let dadosFiltrados = pos;
-        if (this.filtro2) {
-          dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro2));
-        }
-        if (this.filtro3) {
-          dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro3));
-        }
-        if (this.filtro4) {
-          dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro4));
-        }
-        this.dataSource.data = dadosFiltrados;
-        this.totalItems = dadosFiltrados.length;
-        this.isLoading = false;
-      },
-      error => {
-        this.isLoading = false;
-        this.snackBar.open(`Erro ao buscar dados na planilha ${this.currentSheetName}.`, 'Fechar', { duration: 3000 });
+
+    const aplicarFiltrosSecundarios = (dados: Po[]) => {
+      let dadosFiltrados = dados;
+      if (this.filtro2) {
+        dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro2));
       }
-    );
+      if (this.filtro3) {
+        dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro3));
+      }
+      if (this.filtro4) {
+        dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro4));
+      }
+      this.pos = dadosFiltrados; // Atualiza a lista base para consistência, se necessário
+      this.dataSource.data = dadosFiltrados;
+      this.totalItems = dadosFiltrados.length;
+      this.isLoading = false;
+    };
+
+    // Se não há filtro principal, tentar usar o cache
+    if (!filtroPrincipal || filtroPrincipal.trim() === '') {
+      const dadosEmCache = await this.cacheService.getDadosPesquisa(this.currentSheetName!);
+      if (dadosEmCache) { // Se dadosEmCache não for undefined, significa que encontramos para o sheetName atual
+        console.log('Dados carregados do cache (IndexedDB) para:', this.currentSheetName);
+        aplicarFiltrosSecundarios(dadosEmCache);
+        return;
+      }
+
+      // Se não há cache para o sheetName atual, buscar da API e salvar no cache
+      this.poService.listar(this.currentSheetName!, '').subscribe(
+        async pos => { // Marcar como async para usar await dentro
+          console.log('Dados buscados da API e salvos no cache (IndexedDB) para:', this.currentSheetName);
+          await this.cacheService.setDadosPesquisa(this.currentSheetName!, pos);
+          aplicarFiltrosSecundarios(pos);
+        },
+        error => {
+          this.isLoading = false;
+          this.snackBar.open(`Erro ao buscar dados na planilha ${this.currentSheetName}.`, 'Fechar', { duration: 3000 });
+        }
+      );
+    } else {
+      // Se há filtro principal, buscar da API (não salva no cache)
+      this.poService.listar(this.currentSheetName, filtroPrincipal).subscribe(
+        pos => {
+          console.log('Dados buscados da API com filtro principal:', filtroPrincipal);
+          aplicarFiltrosSecundarios(pos);
+        },
+        error => {
+          this.isLoading = false;
+          this.snackBar.open(`Erro ao buscar dados (com filtro) na planilha ${this.currentSheetName}.`, 'Fechar', { duration: 3000 });
+        }
+      );
+    }
   }
 
   // Método auxiliar para verificar se algum campo do item contém o termo

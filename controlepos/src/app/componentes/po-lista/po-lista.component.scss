@@ -205,25 +205,50 @@ mat-card.po-list-card {
       }
       
       .mat-column-acoes {
-        min-width: 120px; // Definir uma largura mínima para a coluna de ações
-        width: 120px;     // Definir uma largura fixa se necessário, ou usar flex-basis
-        text-align: right; // Garantir alinhamento à direita para as células de dados
-        // justify-content: flex-end; // Para flex containers, se aplicável internamente
+        min-width: 240px; 
+        width: 240px;     
 
-        // Estilo específico para o cabeçalho da coluna de ações
-        &.mat-header-cell {
-          text-align: right !important; // Forçar alinhamento à direita para o cabeçalho
-          // justify-content: flex-end; // Se o header cell for flex
+        &.mat-mdc-header-cell { 
+          text-align: center !important;     // Alinhado à esquerda
+          padding-left: 16px !important;   // Padding à esquerda para o título
+          padding-right: 16px !important;  // Padding à direita para o título
+          box-sizing: border-box; 
         }
 
-        button {
-          margin-left: 8px;
-          
-          mat-icon {
-            font-size: 20px;
-            height: 20px;
-            width: 20px;
-            line-height: 20px;
+        .mat-mdc-cell { 
+          display: flex;                 
+          align-items: center;           // Alinhar botões verticalmente ao centro
+          // justify-content: flex-end; // Removido, usaremos margem no primeiro botão
+          padding-top: 12px;
+          padding-bottom: 12px;
+          //padding-left: 10px;
+          //padding-right: 10px;
+          overflow: visible !important;      
+          text-overflow: initial !important; 
+
+          button { 
+            overflow: visible !important;      
+            text-overflow: initial !important; 
+            vertical-align: middle; 
+
+            &:first-child {
+              margin-left: 0px; // Empurra o primeiro botão (e o grupo) para a direita
+            }
+
+            &:not(:first-child) {
+              margin-left: 0px; // Espaçamento para os botões subsequentes
+            }
+
+            mat-icon { 
+              font-size: 20px; 
+              height: 20px;
+              width: 20px !important; 
+              line-height: 20px;
+              display: inline-block !important; 
+              vertical-align: middle;          
+              overflow: visible !important;      
+              text-overflow: initial !important; 
+            }
           }
         }
       }
@@ -684,8 +709,13 @@ table {
 }
 
 .action-button-delete {
-  ::ng-deep mat-icon {
-    color: red !important; // Vermelho para excluir, com !important e ::ng-deep
+  mat-icon { 
+    color: red !important; 
+    // display, overflow, text-overflow, vertical-align são herdados/definidos na regra geral de mat-icon acima
+    // width será 20px pela regra geral
+    white-space: normal !important;   // Mantido para ajudar na renderização de ligaturas de ícone
+    // min-width: auto !important; // Removido, pois width: 20px é definido acima
+    // width: auto !important;     // Removido, pois width: 20px é definido acima
   }
 }
 

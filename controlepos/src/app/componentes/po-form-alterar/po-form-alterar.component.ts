@@ -3,8 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { Po } from '../modelos/po';
-import { PoService } from '../services/po.service';
+
 
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -14,6 +13,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { PoService } from '../../services/po.service';
+import { Po } from '../../modelos/po';
 
 @Component({
   selector: 'app-po-form-alterar',
@@ -74,19 +75,19 @@ export class PoFormAlterarComponent implements OnInit, OnDestroy {
     this.poForm = this.fb.group({
       numero_po: [{ value: this.currentPoNumero, disabled: true }, Validators.required],
       data_po: ['', Validators.required],
-      tipo_logradouro: ['', Validators.required],
+      tipo_logradouro: [''],
       logradouro: ['', Validators.required],
       complemento: [''],
-      analista: ['', Validators.required],
-      data_implantacao: ['', Validators.required],
-      funcionario_responsavel: ['', Validators.required],
-      bairro: ['', Validators.required],
+      analista: [''],
+      data_implantacao: [''],
+      funcionario_responsavel: [''],
+      bairro: [''],
       observacoes: [''],
       detalhamento: [''],
       especificacoes: [''],
-      situacao: ['', Validators.required],
-      solicitante: ['', Validators.required],
-      tipo_solicitante: ['', Validators.required],
+      situacao: [''],
+      solicitante: [''],
+      tipo_solicitante: [''],
       data_enc_dro: [''], // No HTML não há mat-error para 'required'
       numero_controle: [''],
       data_arquivamento: [''] // No HTML não há mat-error para 'required'
@@ -108,12 +109,12 @@ export class PoFormAlterarComponent implements OnInit, OnDestroy {
           this.poForm.patchValue(poDataForForm);
         } else {
           this.snackBar.open(`PO com número ${numero_po} não encontrado na planilha ${sheetName}.`, 'Fechar', { duration: 3000 });
-          this.router.navigate([`/lista-pos/${this.sheetName}`]);
+          this.router.navigate([`/po-lista/${this.sheetName}`]);
         }
       }),
       catchError(err => {
         this.snackBar.open('Erro ao carregar dados do PO.', 'Fechar', { duration: 3000 });
-        this.router.navigate([`/lista-pos/${this.sheetName}`]);
+        this.router.navigate([`/po-lista/${this.sheetName}`]);
         this.isLoading = false; 
         return of(null);
       })
@@ -155,14 +156,14 @@ export class PoFormAlterarComponent implements OnInit, OnDestroy {
       this.isLoading = false;
       if (response) {
         this.snackBar.open('PO atualizado com sucesso!', 'Fechar', { duration: 3000 });
-        this.router.navigate([`/lista-pos/${this.sheetName}`]);
+        this.router.navigate([`/po-lista/${this.sheetName}`]);
       }
     });
   }
 
   cancelar(): void {
     if (this.sheetName) {
-      this.router.navigate([`/lista-pos/${this.sheetName}`]);
+      this.router.navigate([`/po-lista/${this.sheetName}`]);
     } else {
       this.router.navigate(['/']);
     }

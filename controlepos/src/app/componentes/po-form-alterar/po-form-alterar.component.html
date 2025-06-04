@@ -3,7 +3,7 @@
     <mat-spinner></mat-spinner>
   </div>
 
-  <h2>Alterar PO</h2>
+  <h2>{{pageTitle}}</h2>
   <form [formGroup]="poForm" (ngSubmit)="onSubmit()" class="po-form">
 
     <mat-form-field appearance="outline" class="form-field">
@@ -25,9 +25,6 @@
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Tipo de Logradouro</mat-label>
       <input matInput formControlName="tipo_logradouro" placeholder="Ex: Rua">
-      <mat-error *ngIf="poForm.get('tipo_logradouro')?.hasError('required')">
-        Tipo de logradouro é obrigatório.
-      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
@@ -46,33 +43,21 @@
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Analista</mat-label>
       <input matInput formControlName="analista" placeholder="Nome do analista">
-      <mat-error *ngIf="poForm.get('analista')?.hasError('required')">
-        Analista é obrigatório.
-      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Data de Implantação</mat-label>
       <input matInput formControlName="data_implantacao" placeholder="dd/mm/aa" mask="00/00/00">
-      <mat-error *ngIf="poForm.get('data_implantacao')?.hasError('required')">
-        Data de implantação é obrigatória.
-      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Funcionário Responsável</mat-label>
       <input matInput formControlName="funcionario_responsavel" placeholder="Nome do funcionário">
-      <mat-error *ngIf="poForm.get('funcionario_responsavel')?.hasError('required')">
-        Funcionário responsável é obrigatório.
-      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Bairro</mat-label>
       <input matInput formControlName="bairro" placeholder="Nome do bairro">
-      <mat-error *ngIf="poForm.get('bairro')?.hasError('required')">
-        Bairro é obrigatório.
-      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field-full-width">
@@ -93,25 +78,16 @@
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Situação</mat-label>
       <input matInput formControlName="situacao" placeholder="Situação atual">
-      <mat-error *ngIf="poForm.get('situacao')?.hasError('required')">
-        Situação é obrigatória.
-      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Solicitante</mat-label>
       <input matInput formControlName="solicitante" placeholder="Nome do solicitante">
-      <mat-error *ngIf="poForm.get('solicitante')?.hasError('required')">
-        Solicitante é obrigatório.
-      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Tipo de Solicitante</mat-label>
       <input matInput formControlName="tipo_solicitante" placeholder="Tipo de solicitante">
-      <mat-error *ngIf="poForm.get('tipo_solicitante')?.hasError('required')">
-        Tipo de solicitante é obrigatório.
-      </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
