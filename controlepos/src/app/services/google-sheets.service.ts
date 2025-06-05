@@ -17,7 +17,7 @@ export class GoogleSheetsService {
   private usuariosSheetId = '1QR2knxBd_fzNklKZzPRaEw_8Sc00CLnbGJuk-9Hcj9U';
 
   // URL do Google App Script (substitua pela sua URL de implantação)
-  private appScriptUrl = '';
+  private appScriptUrl = 'https://script.google.com/macros/s/AKfycbw-S9i9t_yEDzg2guLf-2ePch82VUcMmi8YFNImUd3WQ4hZoPfb-CftQDl7VtG7QQOFnQ/exec';
 
   constructor(private http: HttpClient) { }
 

@@ -15,7 +15,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Importar
-import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { AutoDateSlashDirective } from '../../directives/auto-date-slash.directive';
+
 
 @Component({
   selector: 'app-po-form',
@@ -29,11 +30,10 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
     MatSelectModule,
     MatSnackBarModule,
     MatProgressSpinnerModule, // Adicionar
-    NgxMaskDirective
+    AutoDateSlashDirective,
   ],
   templateUrl: './po-form.component.html',
-  styleUrls: ['./po-form.component.scss'],
-  providers: [provideNgxMask()]
+  styleUrls: ['./po-form.component.scss']
 })
 export class PoFormComponent implements OnInit, OnDestroy {
   poForm!: FormGroup;

@@ -160,7 +160,7 @@ mat-card.po-list-card {
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 200px;
-        vertical-align: top; // Alinha o conteúdo da célula ao topo
+        vertical-align: middle; // Alinha o conteúdo da célula ao meio
       } // Fim dos estilos gerais para .mat-mdc-cell
 
       // General style for Logradouro column (header and data cells)
@@ -219,10 +219,10 @@ mat-card.po-list-card {
           display: flex;                 
           align-items: center;           // Alinhar botões verticalmente ao centro
           // justify-content: flex-end; // Removido, usaremos margem no primeiro botão
-          padding-top: 12px;
-          padding-bottom: 12px;
-          //padding-left: 10px;
-          //padding-right: 10px;
+          padding-top: 8px;
+          padding-bottom: 8px;
+          padding-left: 10px;
+          padding-right: 10px;
           overflow: visible !important;      
           text-overflow: initial !important; 
 

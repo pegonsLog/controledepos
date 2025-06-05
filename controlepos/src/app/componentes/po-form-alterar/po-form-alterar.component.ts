@@ -12,7 +12,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { AutoDateSlashDirective } from '../../directives/auto-date-slash.directive';
+
 import { PoService } from '../../services/po.service';
 import { Po } from '../../modelos/po';
 
@@ -28,11 +29,10 @@ import { Po } from '../../modelos/po';
     MatButtonModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    NgxMaskDirective
+    AutoDateSlashDirective,
   ],
   templateUrl: './po-form-alterar.component.html',
-  styleUrls: ['./po-form-alterar.component.scss'],
-  providers: [provideNgxMask()]
+  styleUrls: ['./po-form-alterar.component.scss']
 })
 export class PoFormAlterarComponent implements OnInit, OnDestroy {
   poForm!: FormGroup;
