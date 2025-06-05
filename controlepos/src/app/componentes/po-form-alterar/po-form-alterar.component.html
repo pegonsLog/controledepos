@@ -16,7 +16,7 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Data da PO</mat-label>
-      <input matInput formControlName="data_po" placeholder="dd/mm/aa" mask="00/00/00">
+      <input matInput formControlName="data_po" placeholder="dd/mm/aaaa" mask="00/00/0000">
       <mat-error *ngIf="poForm.get('data_po')?.hasError('required')">
         Data da PO é obrigatória.
       </mat-error>
@@ -47,7 +47,7 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Data de Implantação</mat-label>
-      <input matInput formControlName="data_implantacao" placeholder="dd/mm/aa" mask="00/00/00">
+      <input matInput formControlName="data_implantacao" placeholder="dd/mm/aaaa" mask="00/00/0000">
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
@@ -92,7 +92,7 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Data Encerramento DRO</mat-label>
-      <input matInput formControlName="data_enc_dro" placeholder="dd/mm/aa" mask="00/00/00">
+      <input matInput formControlName="data_enc_dro" placeholder="dd/mm/aaaa" mask="00/00/0000">
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field">
@@ -102,7 +102,7 @@
 
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Data de Arquivamento</mat-label>
-      <input matInput formControlName="data_arquivamento" placeholder="dd/mm/aa" mask="00/00/00">
+      <input matInput formControlName="data_arquivamento" placeholder="dd/mm/aaaa" mask="00/00/0000">
     </mat-form-field>
 
     <div class="form-actions">

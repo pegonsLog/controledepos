@@ -7,7 +7,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class DateStringPipe implements PipeTransform {
   transform(value: string | null | undefined): string {
     if (!value || typeof value !== 'string') {
-      return value || '-'; // Retorna o valor original ou '-' se for nulo/undefined/não string
+      return ''; // Retorna string vazia para nulo/undefined/string vazia ou não string
     }
 
     // Tenta formatar como DD/MM/YY para strings de 6 dígitos (DDMMYY)

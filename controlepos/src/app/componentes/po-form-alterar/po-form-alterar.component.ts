@@ -169,27 +169,55 @@ export class PoFormAlterarComponent implements OnInit, OnDestroy {
     }
   }
 
-  private parseToDisplayFormat(dateYMD: string | undefined): string {
-    if (!dateYMD) return '';
-    const parts = dateYMD.split('-'); // YYYY-MM-DD
-    if (parts.length === 3) {
-      const year = parts[0].slice(-2); // Pega os últimos 2 dígitos do ano
-      return `${parts[2]}/${parts[1]}/${year}`; // dd/MM/yy
-    }
-    return dateYMD; // Retorna o original se não estiver no formato esperado
+  private parseToDisplayFormat(dateDDMMYYYY_fromModel: string | undefined): string {
+  if (!dateDDMMYYYY_fromModel || dateDDMMYYYY_fromModel.trim() === '') {
+    return '';
   }
+  const dateStr = dateDDMMYYYY_fromModel.trim();
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const day = parts[0];
+    const month = parts[1];
+    const year = parts[2];
+    // Validação básica
+    if (day.length >= 1 && day.length <= 2 &&
+        month.length >= 1 && month.length <= 2 &&
+        year.length === 4 &&
+        !isNaN(parseInt(day)) && !isNaN(parseInt(month)) && !isNaN(parseInt(year)) &&
+        parseInt(day, 10) >= 1 && parseInt(day, 10) <= 31 &&
+        parseInt(month, 10) >= 1 && parseInt(month, 10) <= 12 &&
+        parseInt(year, 10) > 0) { // Ano deve ser positivo
+      return dateStr; // Retorna a string dd/MM/yyyy original se válida
+    }
+  }
+  // console.warn(`parseToDisplayFormat: Formato inválido recebido: ${dateDDMMYYYY_fromModel}`);
+  return ''; // Retorna vazio se o formato não for válido
+}
 
-  private parseToModelFormat(dateDMY: string | undefined): string {
-    if (!dateDMY) return '';
-    const parts = dateDMY.split('/'); // dd/MM/yy
-    if (parts.length === 3) {
-      // Assume que 'yy' se refere ao século 21 (20xx)
-      // Adicionar validação mais robusta se necessário (ex: para datas como '31/12/99')
-      const year = parseInt(parts[2], 10) < 70 ? `20${parts[2]}` : `19${parts[2]}`; // Simples heurística para século
-      return `${year}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`; // YYYY-MM-DD
-    }
-    return dateDMY; // Retorna o original se não estiver no formato esperado
+  private parseToModelFormat(dateDDMMYYYY_fromForm: string | undefined): string {
+  if (!dateDDMMYYYY_fromForm || dateDDMMYYYY_fromForm.trim() === '' || dateDDMMYYYY_fromForm.includes('_')) {
+    // Se a máscara ainda não foi preenchida (contém '_'), retorna vazio
+    return '';
   }
+  const dateStr = dateDDMMYYYY_fromForm.trim();
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const day = parts[0];
+    const month = parts[1];
+    const year = parts[2];
+    // A máscara 00/00/0000 deve garantir os comprimentos corretos (dd, MM, yyyy).
+    // Validação dos valores numéricos.
+    if (day.length === 2 && month.length === 2 && year.length === 4 &&
+        !isNaN(parseInt(day)) && !isNaN(parseInt(month)) && !isNaN(parseInt(year)) &&
+        parseInt(day, 10) >= 1 && parseInt(day, 10) <= 31 &&
+        parseInt(month, 10) >= 1 && parseInt(month, 10) <= 12 &&
+        parseInt(year, 10) > 0) { // Ano deve ser positivo
+      return dateStr; // Retorna a string dd/MM/yyyy original se válida
+    }
+  }
+  // console.warn(`parseToModelFormat: Formato inválido recebido do formulário: ${dateDDMMYYYY_fromForm}`);
+  return ''; // Retorna vazio se o formato não for válido
+}
 
   ngOnDestroy(): void {
     if (this.routeSubscription) {

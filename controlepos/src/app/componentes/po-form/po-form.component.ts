@@ -37,13 +37,10 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 })
 export class PoFormComponent implements OnInit, OnDestroy {
   poForm!: FormGroup;
-  isEditMode = false;
-  currentPoNumero: string | null = null;
   sheetName: string | null = null; // Para armazenar o nome da aba (Oeste/Barreiro)
   pageTitle = 'Novo PO';
   isLoading = false;
   private routeSubscription: Subscription | undefined;
-  private poSubscription: Subscription | undefined;
 
   tiposLogradouro$!: Observable<string[]>;
   analistas$!: Observable<string[]>;
@@ -61,36 +58,28 @@ export class PoFormComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.isLoading = true;
+    this.isLoading = true; // Inicia como true, será false após setup inicial
     this.routeSubscription = this.route.paramMap.subscribe(params => {
-      this.currentPoNumero = params.get('numero_po'); // Pode ser 'numero_po' ou 'id', ajuste conforme suas rotas
       this.sheetName = params.get('sheetName');
 
       if (!this.sheetName) {
         console.error('SheetName não encontrado nos parâmetros da rota!');
         this.snackBar.open('Erro: Contexto da planilha (Oeste/Barreiro) não definido.', 'Fechar', { duration: 5000 });
         this.isLoading = false;
-        this.router.navigate(['/']); // Navega para uma rota padrão ou de erro
+        this.router.navigate(['/menu']); // Navega para o menu ou uma rota de erro apropriada
         return;
       }
 
-      this.isEditMode = !!this.currentPoNumero;
-      this.pageTitle = this.isEditMode ? `Alterar PO (${this.sheetName})` : `Adicionar PO (${this.sheetName})`;
+      this.pageTitle = `Adicionar PO (${this.sheetName})`;
       this.initializeForm();
-
-      if (this.isEditMode && this.currentPoNumero) {
-        this.loadPoData(this.currentPoNumero, this.sheetName);
-      } else {
-        this.isLoading = false;
-      }
+      this.loadDropdownData(); // Carrega os dados dos dropdowns
+      this.isLoading = false; // Finaliza o carregamento inicial
     });
-
-    this.loadDropdownData();
   }
 
   private initializeForm(): void {
     this.poForm = this.fb.group({
-      numero_po: [{ value: '', disabled: this.isEditMode }, Validators.required],
+      numero_po: ['', Validators.required], // Sempre habilitado para novo PO
       data_po: ['', Validators.required],
       tipo_logradouro: [''],
       logradouro: ['', Validators.required],
@@ -148,90 +137,54 @@ export class PoFormComponent implements OnInit, OnDestroy {
     );
   }
 
-  private loadPoData(numero_po: string, sheetName: string): void {
-    this.isLoading = true;
-    this.poSubscription = this.poService.getPoByNumeroPo(numero_po, sheetName).pipe(
-      tap(po => {
-        if (po) {
-          // Converte as strings de data 'YYYY-MM-DD' para objetos Date antes de popular o formulário
-          const poWithDatesAsObjects: any = { ...po };
-          const dateFields: (keyof Po)[] = ['data_po', 'data_implantacao', 'data_enc_dro', 'data_arquivamento'];
-          
-          dateFields.forEach(field => {
-            const dateValue = po[field];
-            if (typeof dateValue === 'string' && dateValue) {
-              poWithDatesAsObjects[field] = this.parseYYYYMMDDToDate(dateValue);
-            }
-          });
-          // Remove espaços extras dos campos relevantes
-          if (typeof poWithDatesAsObjects.tipo_logradouro === 'string') {
-            poWithDatesAsObjects.tipo_logradouro = poWithDatesAsObjects.tipo_logradouro.trim();
-          }
-          if (typeof poWithDatesAsObjects.tipo_solicitante === 'string') {
-            poWithDatesAsObjects.tipo_solicitante = poWithDatesAsObjects.tipo_solicitante.trim();
-          }
-
-          // console.log('Dados do PO para o formulário (loadPoData DEPOIS DO TRIM):', JSON.stringify(poWithDatesAsObjects));
-          // console.log('Valor para Analista (do PO):', poWithDatesAsObjects.analista);
-          // console.log('Valor para Situação (do PO):', poWithDatesAsObjects.situacao);
-          // console.log('Valor para Tipo Logradouro (do PO DEPOIS DO TRIM):', poWithDatesAsObjects.tipo_logradouro);
-          // console.log('Valor para Funcionário Responsável (do PO):', poWithDatesAsObjects.funcionario_responsavel);
-          // console.log('Valor para Tipo Solicitante (do PO DEPOIS DO TRIM):', poWithDatesAsObjects.tipo_solicitante);
-          this.poForm.patchValue(poWithDatesAsObjects);
-        } else {
-          this.snackBar.open(`PO com número ${numero_po} não encontrado na planilha ${sheetName}.`, 'Fechar', { duration: 3000 });
-          this.router.navigate([`/lista-pos/${this.sheetName}`]);
-        }
-      }),
-      catchError(err => {
-        console.error('Erro ao carregar PO:', err);
-        this.snackBar.open('Erro ao carregar dados do PO.', 'Fechar', { duration: 3000 });
-        this.isLoading = false;
-        return of(null); // Retorna um observable nulo para completar a cadeia
-      })
-    ).subscribe(() => {
-      this.isLoading = false;
-    });
+    private parseToDisplayFormat(dateDDMMYYYY_fromModel: string | undefined): string {
+  if (!dateDDMMYYYY_fromModel || dateDDMMYYYY_fromModel.trim() === '') {
+    return '';
   }
+  const dateStr = dateDDMMYYYY_fromModel.trim();
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const day = parts[0];
+    const month = parts[1];
+    const year = parts[2];
+    // Validação básica
+    if (day.length >= 1 && day.length <= 2 &&
+        month.length >= 1 && month.length <= 2 &&
+        year.length === 4 &&
+        !isNaN(parseInt(day)) && !isNaN(parseInt(month)) && !isNaN(parseInt(year)) &&
+        parseInt(day, 10) >= 1 && parseInt(day, 10) <= 31 &&
+        parseInt(month, 10) >= 1 && parseInt(month, 10) <= 12 &&
+        parseInt(year, 10) > 0) { // Ano deve ser positivo
+      return dateStr; // Retorna a string dd/MM/yyyy original se válida
+    }
+  }
+  // console.warn(`parseToDisplayFormat: Formato inválido recebido: ${dateDDMMYYYY_fromModel}`);
+  return ''; // Retorna vazio se o formato não for válido
+}
 
-  // Converte string 'YYYY-MM-DD' para objeto Date
-  private parseYYYYMMDDToDate(dateString: string): Date | null {
-    if (!dateString) return null;
-    const parts = dateString.split('-');
+  private parseToModelFormat(dateDDMMYYYY_fromForm: string | undefined): string {
+    if (!dateDDMMYYYY_fromForm || dateDDMMYYYY_fromForm.trim() === '' || dateDDMMYYYY_fromForm.includes('_')) {
+      // Se a máscara ainda não foi preenchida (contém '_'), retorna vazio
+      return '';
+    }
+    const dateStr = dateDDMMYYYY_fromForm.trim();
+    const parts = dateStr.split('/');
     if (parts.length === 3) {
-      const year = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // Mês é 0-indexado no Date
-      const day = parseInt(parts[2], 10);
-      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
-        const date = new Date(Date.UTC(year, month, day)); // Usar UTC para evitar problemas de fuso
-         if (date.getUTCFullYear() === year && date.getUTCMonth() === month && date.getUTCDate() === day) {
-            return date;
-        }
+      const day = parts[0];
+      const month = parts[1];
+      const year = parts[2];
+      // A máscara 00/00/0000 deve garantir os comprimentos corretos (dd, MM, yyyy).
+      // Validação dos valores numéricos.
+      if (day.length === 2 && month.length === 2 && year.length === 4 &&
+          !isNaN(parseInt(day)) && !isNaN(parseInt(month)) && !isNaN(parseInt(year)) &&
+          parseInt(day, 10) >= 1 && parseInt(day, 10) <= 31 &&
+          parseInt(month, 10) >= 1 && parseInt(month, 10) <= 12 &&
+          parseInt(year, 10) > 0) { // Ano deve ser positivo
+        return dateStr; // Retorna a string dd/MM/yyyy original se válida
       }
     }
-    console.warn(`Formato de data inválido recebido: ${dateString}. Esperado YYYY-MM-DD.`);
-    return null;
-  }
-
-  private parseToDisplayFormat(dateYMD: string | undefined): string {
-    if (!dateYMD) return '';
-    const parts = dateYMD.split('-'); // YYYY-MM-DD
-    if (parts.length === 3) {
-      const year = parts[0].slice(-2); // Pega os últimos 2 dígitos do ano
-      return `${parts[2]}/${parts[1]}/${year}`; // dd/MM/yy
-    }
-    return dateYMD; // Retorna o original se não estiver no formato esperado
-  }
-
-  private parseToModelFormat(dateDMY: string | undefined): string {
-    if (!dateDMY) return '';
-    const parts = dateDMY.split('/'); // dd/MM/yy
-    if (parts.length === 3) {
-      // Assume que 'yy' se refere ao século 21 (20xx)
-      const year = parseInt(parts[2], 10) < 70 ? `20${parts[2]}` : `19${parts[2]}`; // Simples heurística para século
-      return `${year}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`; // YYYY-MM-DD
-    }
-    return dateDMY; // Retorna o original se não estiver no formato esperado
+    // console.warn(`parseToModelFormat: Formato inválido recebido do formulário: ${dateDDMMYYYY_fromForm}`);
+    return ''; // Retorna vazio se o formato não for válido
   }
 
   onSubmit(): void {
@@ -246,45 +199,22 @@ export class PoFormComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-    const rawFormValue = this.poForm.getRawValue(); // Inclui campos desabilitados (como numero_po em edição)
-    
-    // Formata as datas para string antes de enviar
+    const formValues = this.poForm.getRawValue();
+
     const poData: Po = {
-      ...rawFormValue,
-      data_po: this.parseToModelFormat(rawFormValue.data_po),
-      data_implantacao: this.parseToModelFormat(rawFormValue.data_implantacao),
-      data_enc_dro: this.parseToModelFormat(rawFormValue.data_enc_dro),
-      data_arquivamento: this.parseToModelFormat(rawFormValue.data_arquivamento),
-      // Se numero_po é desabilitado e não vem no rawFormValue em edicao, pega do currentPoNumero
-      numero_po: this.isEditMode && this.currentPoNumero ? this.currentPoNumero : rawFormValue.numero_po
+      ...formValues,
+      data_po: this.parseToModelFormat(formValues.data_po),
+      data_implantacao: this.parseToModelFormat(formValues.data_implantacao),
+      data_enc_dro: this.parseToModelFormat(formValues.data_enc_dro),
+      data_arquivamento: this.parseToModelFormat(formValues.data_arquivamento),
     };
 
-    // Adiciona/atualiza timestamps se o AppScript não fizer isso
-    // poData.ultima_edicao = new Date().toISOString();
-    // if (!this.isEditMode) {
-    //   poData.criado_em = new Date().toISOString();
-    // }
-
-
-    let operation$: Observable<any>;
-
-    if (this.isEditMode) {
-      operation$ = this.poService.atualizarPo(poData, this.sheetName);
-    } else {
-      operation$ = this.poService.adicionarPo(poData, this.sheetName);
-    }
-
-    this.poSubscription = operation$.pipe(
-      catchError(err => {
-        console.error('Erro ao salvar PO:', err);
-        this.snackBar.open(`Erro ao salvar PO: ${err.message || 'Erro desconhecido.'}`, 'Fechar', { duration: 5000 });
+    // Adicionar novo PO
+    this.poService.adicionarPo(poData, this.sheetName).subscribe({
+      next: () => {
         this.isLoading = false;
-        return of(null); // Para completar a cadeia e evitar que o complete não seja chamado
-      })
-    ).subscribe(response => {
-      this.isLoading = false;
-      if (response && response !== null) { // Verifica se não houve erro (null retornado pelo catchError)
-        this.snackBar.open(`PO ${this.isEditMode ? 'atualizado' : 'adicionado'} com sucesso!`, 'Fechar', { duration: 3000 });
+        this.snackBar.open('PO adicionado com sucesso!', 'Fechar', { duration: 3000 });
+        this.poForm.reset(); // Limpa o formulário
         this.router.navigate([`/po-lista/${this.sheetName}`]);
       }
     });
@@ -302,9 +232,6 @@ export class PoFormComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
-    }
-    if (this.poSubscription) {
-      this.poSubscription.unsubscribe();
     }
   }
 }

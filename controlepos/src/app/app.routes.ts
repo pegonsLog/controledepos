@@ -12,6 +12,7 @@ import { PoFormAlterarComponent } from './componentes/po-form-alterar/po-form-al
 import { LimparCacheGuard } from './guard/limpar-cache.guard';
 
 export const routes: Routes = [
+
   { path: 'login', component: LoginComponent }, // Rota de Login
   {
     path: 'menu',
@@ -44,10 +45,6 @@ export const routes: Routes = [
     component: PdfListComponent,
     canActivate: [authGuard] // Proteger
   },
-  // Rota padrão: redireciona para o menu se logado (o guardião cuida disso),
-  // ou para login se não logado (o guardião também cuida disso ao tentar acessar /menu).
-  // Se o usuário acessar a raiz, e não estiver logado, será redirecionado para /login pelo guard do /menu.
-  // Se estiver logado, acessará /menu.
-  { path: '', redirectTo: '/menu', pathMatch: 'full' },
-  { path: '**', redirectTo: '/menu' } // Rota curinga para redirecionar para o menu
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '**', redirectTo: '/login' } // Rota curinga para redirecionar para o login
 ];
