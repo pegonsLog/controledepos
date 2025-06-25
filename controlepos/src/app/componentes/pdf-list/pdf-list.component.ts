@@ -1,18 +1,17 @@
-import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, Input, ViewChild, AfterViewInit, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PdfService, PdfFile } from '../../services/pdf.service'; // Ajuste o caminho se o serviço estiver em outro local
+import { PdfService, PdfFile } from '../../services/pdf.service';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatPaginator } from '@angular/material/paginator';
 
 @Component({
   selector: 'app-pdf-list',
@@ -28,12 +27,13 @@ import { MatPaginator } from '@angular/material/paginator';
     MatIconModule,
     MatButtonModule,
     MatProgressBarModule
-    // RouterOutlet, RouterLink // Se for usar routerLink no template, adicione RouterLink aqui e importe de @angular/router
   ],
   templateUrl: './pdf-list.component.html',
-  styleUrls: ['./pdf-list.component.scss'] 
+  styleUrls: ['./pdf-list.component.scss']
 })
-export class PdfListComponent implements OnInit, AfterViewInit {
+export class PdfListComponent implements OnChanges, AfterViewInit {
+  @Input() sheetName: string = ''; // Receberá a regional ('Oeste', 'Barreiro') do componente pai
+
   allPdfFiles: PdfFile[] = [];
   dataSource = new MatTableDataSource<PdfFile>([]);
   searchTerm = '';
@@ -43,51 +43,56 @@ export class PdfListComponent implements OnInit, AfterViewInit {
   loading = true;
   errorMessage = '';
   tituloRegional: string = '';
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  constructor(private pdfService: PdfService, private router: Router, private route: ActivatedRoute, private cdr: ChangeDetectorRef) { }
+  constructor(private pdfService: PdfService, private cdr: ChangeDetectorRef, private router: Router) { }
 
-  ngOnInit(): void {
+  ngOnChanges(changes: SimpleChanges): void {
+    // Reage quando o valor de 'sheetName' é passado pelo componente pai
+    if (changes['sheetName'] && changes['sheetName'].currentValue) {
+      this.tituloRegional = this.sheetName.toUpperCase();
+      this.loadPdfFiles();
+    }
+  }
+
+  ngAfterViewInit() {
+    // Configura o paginador para a tabela
+    this.dataSource.paginator = this.paginator;
+  }
+
+  loadPdfFiles(): void {
     this.loading = true;
-    this.route.paramMap.subscribe(params => {
-      const folderIdentifier = params.get('folderIdentifier');
-      if (folderIdentifier) {
-        this.tituloRegional = folderIdentifier.toUpperCase();
-        this.pdfService.getPdfFiles(folderIdentifier).subscribe(
-          (files) => {
-            this.allPdfFiles = files;
-            this.searchTerm = '';
-            this.searchTerm2 = '';
-            this.searchTerm3 = '';
-            this.searchTerm4 = '';
-            this.filterPdfFiles(); // Atualiza dataSource.data
-            if (this.paginator) { // Se ngAfterViewInit já tornou o paginator disponível
-              this.dataSource.paginator = this.paginator; // Reatribui para garantir
-              this.cdr.detectChanges(); // Força a detecção de mudanças
-            }
-            this.loading = false;
-          },
-          (error: any) => { // Correctly placed error handler for getPdfFiles
-            this.errorMessage = `Erro ao carregar os arquivos da pasta ${folderIdentifier}.`;
-            console.error(`Erro ao buscar os PDFs para ${folderIdentifier}:`, error);
-            this.loading = false;
-          }
-        );
-      } else {
-        this.errorMessage = 'Identificador da pasta não encontrado na rota.';
-        console.error('Identificador da pasta não encontrado na rota.');
+    this.errorMessage = '';
+    this.pdfService.getPdfFiles(this.sheetName).subscribe({
+      next: (files) => {
+        this.allPdfFiles = files;
+        this.limparFiltro('searchTerm'); // Limpa todos os filtros
+        this.filterPdfFiles(); // Aplica os filtros (agora vazios) e atualiza a tabela
+        this.loading = false;
+        this.cdr.detectChanges(); // Garante que a view seja atualizada
+      },
+      error: (error) => {
+        this.errorMessage = `Erro ao carregar os arquivos da regional ${this.sheetName}.`;
+        console.error(`Erro ao buscar os PDFs para ${this.sheetName}:`, error);
+        this.allPdfFiles = [];
+        this.dataSource.data = [];
         this.loading = false;
       }
     });
   }
 
   limparFiltro(filtro: 'searchTerm' | 'searchTerm2' | 'searchTerm3' | 'searchTerm4'): void {
-    this[filtro] = '';
+    // Limpa todos os filtros para uma nova busca
+    this.searchTerm = '';
+    this.searchTerm2 = '';
+    this.searchTerm3 = '';
+    this.searchTerm4 = '';
     this.filterPdfFiles();
   }
 
   filterPdfFiles(): void {
-    if (!this.allPdfFiles || this.allPdfFiles.length === 0) {
+    if (!this.allPdfFiles) {
       this.dataSource.data = [];
       return;
     }
@@ -103,18 +108,6 @@ export class PdfListComponent implements OnInit, AfterViewInit {
   }
 
   navegarParaMenu(): void {
-    this.router.navigate(['/menu']); // Ajuste a rota conforme necessário
-  }
-
-  ngAfterViewInit() {
-    console.log('PdfListComponent ngAfterViewInit - this.paginator:', this.paginator);
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-      this.cdr.detectChanges(); // Força a detecção de mudanças
-    } else {
-      console.error('PdfListComponent ngAfterViewInit - Paginator NÃO encontrado!');
-    }
+    this.router.navigate(['/menu']);
   }
 }
-
-

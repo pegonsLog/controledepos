@@ -31,6 +31,8 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateStringPipe } from '../date-string.pipe';
+import { PdfListComponent } from '../pdf-list/pdf-list.component';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-po-lista',
@@ -48,16 +50,19 @@ import { DateStringPipe } from '../date-string.pipe';
     MatProgressSpinnerModule,
     MatFormFieldModule,
     MatInputModule,
+    MatDividerModule,
     FormsModule,
     MatTooltipModule,
     MatDialogModule, // Adicionar MatDialogModule
     MatSnackBarModule, // Adicionar MatSnackBarModule
-    DateStringPipe // Adiciona o pipe aos imports
+    DateStringPipe, // Adiciona o pipe aos imports
+    PdfListComponent
   ]
 })
 export class PoListaComponent implements OnInit, AfterViewInit {
   public isAdminUser = false; // Adicionado para controle de acesso
   isLoading: boolean = false;
+  public sheetName: string = '';
   selectedRow: Po | null = null; // Para rastrear a linha selecionada
   pos: Po[] = [];
   @Output() selecionarPo = new EventEmitter<string>();
@@ -76,8 +81,8 @@ export class PoListaComponent implements OnInit, AfterViewInit {
       return;
     }
     if (!po || !po.numero_po) { // Adicionar verificação para po e po.numero_po
-       this.snackBar.open('Dados do PO inválidos para alteração.', 'Fechar', { duration: 3000 });
-          return;
+      this.snackBar.open('Dados do PO inválidos para alteração.', 'Fechar', { duration: 3000 });
+      return;
     }
     // Navegar para a rota de edição, usando o numero_po e sheetName
     this.router.navigate(['/alterar-po', this.currentSheetName, encodeURIComponent(po.numero_po)]);
@@ -166,12 +171,12 @@ export class PoListaComponent implements OnInit, AfterViewInit {
   filtro2: string = '';
   filtro3: string = '';
   filtro4: string = '';
-  
+
   currentSheetName: string = ''; // Para armazenar o nome da aba atual
   idDaPlanilha = '1AQjzxBPFKxwfAGolCxvzOEcQBs5Z-0yKUKIxsjDXdAI';
 
   constructor(
-    private poService: PoService, 
+    private poService: PoService,
     private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute, // Injete ActivatedRoute
@@ -179,7 +184,7 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     private snackBar: MatSnackBar, // Injetar MatSnackBar
     private usuarioService: UsuarioService, // Adicionado para controle de acesso
     private cacheService: CacheService // Injetar CacheService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.isAdminUser = this.usuarioService.isAdmin(); // Adicionado para controle de acesso
@@ -187,10 +192,12 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     this.route.paramMap.subscribe(params => {
       const sheetNameParam = params.get('sheetName');
       if (sheetNameParam) {
+        this.sheetName = sheetNameParam;
         this.currentSheetName = sheetNameParam;
         this.loadDataForSheet();
       } else {
         // Tratar caso onde sheetName não está presente, talvez redirecionar ou carregar um padrão
+        this.sheetName = 'Oeste'; // Fallback para Oeste ou outra lógica
         this.currentSheetName = 'Oeste'; // Fallback para Oeste ou outra lógica
         this.loadDataForSheet(); // Ou mostrar uma mensagem de erro
         // this.router.navigate(['/menu']); // Exemplo de redirecionamento
@@ -201,14 +208,14 @@ export class PoListaComponent implements OnInit, AfterViewInit {
   loadDataForSheet() {
     if (!this.currentSheetName) return;
     // Chama buscarNaGoogleSheets com filtro vazio para carregar dados iniciais (usando cache se disponível)
-    this.buscarNaGoogleSheets(''); 
+    this.buscarNaGoogleSheets('');
   }
 
   ngAfterViewInit() {
     // O setter do paginator deve cuidar da atribuição.
     // Se for necessário um fallback, pode ser adicionado aqui, mas idealmente o setter é suficiente.
     if (this._actualPaginator && !this.dataSource.paginator) {
-       this.dataSource.paginator = this._actualPaginator;
+      this.dataSource.paginator = this._actualPaginator;
     }
   }
 

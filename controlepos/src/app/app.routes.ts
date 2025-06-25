@@ -4,7 +4,6 @@ import { PoFormComponent } from './componentes/po-form/po-form.component';
 
 import { PoListaComponent } from './componentes/po-lista/po-lista.component';
 import { PoDetalhesComponent } from './componentes/po-detalhes/po-detalhes.component';
-import { PdfListComponent } from './componentes/pdf-list/pdf-list.component';
 import { MenuComponent } from './componentes/menu/menu.component';
 import { LoginComponent } from './componentes/login/login.component'; // Importar LoginComponent
 import { authGuard } from './guard/guard'; // Importar authGuard
@@ -39,11 +38,6 @@ export const routes: Routes = [
     component: PoListaComponent,
     canActivate: [authGuard], // Proteger
     canDeactivate: [LimparCacheGuard] // Limpar cache ao sair para o menu
-  },
-  {
-    path: 'pdfs/:folderIdentifier',
-    component: PdfListComponent,
-    canActivate: [authGuard] // Proteger
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' } // Rota curinga para redirecionar para o login
