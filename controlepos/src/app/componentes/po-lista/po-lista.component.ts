@@ -171,6 +171,8 @@ export class PoListaComponent implements OnInit, AfterViewInit {
   filtro2: string = '';
   filtro3: string = '';
   filtro4: string = '';
+  filtroAnoInicio!: number;
+  filtroAnoFim!: number;
 
   currentSheetName: string = ''; // Para armazenar o nome da aba atual
   idDaPlanilha = '1AQjzxBPFKxwfAGolCxvzOEcQBs5Z-0yKUKIxsjDXdAI';
@@ -189,6 +191,10 @@ export class PoListaComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.isAdminUser = this.usuarioService.isAdmin(); // Adicionado para controle de acesso
     this.isLoading = true;
+    const anoAtual = new Date().getFullYear();
+    this.filtroAnoInicio = anoAtual - 5;
+    this.filtroAnoFim = anoAtual;
+
     this.route.paramMap.subscribe(params => {
       const sheetNameParam = params.get('sheetName');
       if (sheetNameParam) {
@@ -259,6 +265,33 @@ export class PoListaComponent implements OnInit, AfterViewInit {
       }
       if (this.filtro4) {
         dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro4));
+      }
+
+      // Adiciona o filtro por período (ano)
+      if (this.filtroAnoInicio && this.filtroAnoFim) {
+        dadosFiltrados = dadosFiltrados.filter(item => {
+          if (!item.data_po) {
+            return false;
+          }
+          // Extrai o ano da data. A data pode estar em formatos diferentes.
+          // Esta abordagem tenta ser robusta.
+          const data = new Date(item.data_po);
+          if (isNaN(data.getTime())) {
+            // Se a data não for válida, tenta converter de DD/MM/YYYY para YYYY-MM-DD
+            const parts = String(item.data_po).split('/');
+            if (parts.length === 3) {
+              const [dia, mes, ano] = parts;
+              const dataCorrigida = new Date(`${ano}-${mes}-${dia}`);
+              if (!isNaN(dataCorrigida.getTime())) {
+                const anoPo = dataCorrigida.getFullYear();
+                return anoPo >= this.filtroAnoInicio && anoPo <= this.filtroAnoFim;
+              }
+            }
+            return false; // Se ainda assim for inválida, não inclui o item
+          }
+          const anoPo = data.getFullYear();
+          return anoPo >= this.filtroAnoInicio && anoPo <= this.filtroAnoFim;
+        });
       }
       this.pos = dadosFiltrados; // Atualiza a lista base para consistência, se necessário
       this.dataSource.data = dadosFiltrados;

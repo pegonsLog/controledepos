@@ -62,7 +62,7 @@ mat-card.po-list-card {
       .filter-item {
         flex: 1 1 0; // Distribui o espaço igualmente entre os filtros dentro do wrapper
         min-width: 0; // Permite que os inputs encolham bastante se necessário
-        // Removido max-width para permitir que preencham o espaço
+        padding-top: 8px; // Adiciona espaço no topo para o label flutuante
       }
     }
 
