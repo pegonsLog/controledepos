@@ -47,13 +47,13 @@
         <mat-form-field appearance="outline" class="filter-field filter-item">
           <mat-label>Ano Início</mat-label>
           <input matInput type="number" placeholder="Ano inicial" [(ngModel)]="filtroAnoInicio"
-            (ngModelChange)="aplicarFiltro()" />
+            (blur)="aplicarFiltro()" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="filter-field filter-item">
           <mat-label>Ano Fim</mat-label>
           <input matInput type="number" placeholder="Ano final" [(ngModel)]="filtroAnoFim"
-            (ngModelChange)="aplicarFiltro()" />
+            (blur)="aplicarFiltro()" />
         </mat-form-field>
 
       </div> <!-- Fim da nova div .filter-inputs-wrapper -->
