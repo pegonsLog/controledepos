@@ -9,6 +9,7 @@ import { LoginComponent } from './componentes/login/login.component'; // Importa
 import { authGuard } from './guard/guard'; // Importar authGuard
 import { PoFormAlterarComponent } from './componentes/po-form-alterar/po-form-alterar.component';
 import { LimparCacheGuard } from './guard/limpar-cache.guard';
+import { DashboardPoComponent } from './componentes/dashboard-po/dashboard-po.component';
 
 export const routes: Routes = [
 
@@ -38,6 +39,11 @@ export const routes: Routes = [
     component: PoListaComponent,
     canActivate: [authGuard], // Proteger
     canDeactivate: [LimparCacheGuard] // Limpar cache ao sair para o menu
+  },
+  {
+    path: 'dashboard-po',
+    component: DashboardPoComponent,
+    canActivate: [authGuard] // Proteger
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' } // Rota curinga para redirecionar para o login

@@ -1,0 +1,78 @@
+:host {
+  display: block;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f6f8;
+  padding: 24px;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+}
+
+.filters-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 8px;
+}
+
+.filters-container.center {
+  justify-content: center;
+}
+
+.charts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.chart-card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.wide-card {
+  grid-column: span 2; /* Faz o card comparativo ocupar duas colunas */
+}
+
+mat-card-header {
+  padding-bottom: 16px;
+}
+
+mat-card-content {
+  flex-grow: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+}
+
+/* Estilos para ngx-charts */
+::ng-deep ngx-charts-bar-vertical,
+::ng-deep ngx-charts-line-chart {
+  width: 100% !important;
+  height: 100% !important;
+}
+::ng-deep .ngx-charts .grid-panel.odd line {
+  stroke: #f0f0f0;
+}
+
+::ng-deep .ngx-charts .grid-panel.even line {
+  stroke: #e0e0e0;
+}
+
+@media (max-width: 900px) {
+  .wide-card {
+    grid-column: span 1;
+  }
+}

@@ -58,6 +58,10 @@
 
       </div> <!-- Fim da nova div .filter-inputs-wrapper -->
   
+      <button mat-raised-button color="accent" (click)="irParaDashboard()" class="action-button filter-add-button" matTooltip="Visualizar Dashboard">
+        <mat-icon>dashboard</mat-icon>
+        Dashboard
+      </button>
       <button *ngIf="isAdminUser" mat-raised-button color="primary" (click)="adicionarPo()" class="action-button filter-add-button"> <!-- Adicionada classe opcional para o botão -->
         Adicionar PO
         <mat-icon>add</mat-icon>

@@ -48,7 +48,7 @@ mat-card.po-list-card {
 
   .filter-container {
     display: flex;
-    align-items: flex-start; // Alinha os itens (wrapper dos inputs e botões) ao topo
+    align-items: baseline;   // Alinha os itens pela linha de base do texto
     gap: 8px; 
     padding-bottom: 16px;
     width: 100%;
@@ -69,6 +69,7 @@ mat-card.po-list-card {
     .action-button {
       margin-left: 0; 
       flex-shrink: 0; // Impede que os botões encolham
+      height: 54px; // Define a altura para corresponder aos inputs
       // Para dar um pouco mais de espaço aos botões, se necessário:
       // padding-left: 8px;
       // padding-right: 8px;

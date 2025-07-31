@@ -53,9 +53,9 @@ import { MatDividerModule } from '@angular/material/divider';
     MatDividerModule,
     FormsModule,
     MatTooltipModule,
-    MatDialogModule, // Adicionar MatDialogModule
-    MatSnackBarModule, // Adicionar MatSnackBarModule
-    DateStringPipe, // Adiciona o pipe aos imports
+    MatDialogModule,
+    MatSnackBarModule,
+    DateStringPipe,
     PdfListComponent
   ]
 })
@@ -127,6 +127,10 @@ export class PoListaComponent implements OnInit, AfterViewInit {
 
   navegarParaMenu() {
     this.router.navigate(['/menu']);
+  }
+
+  irParaDashboard() {
+    this.router.navigate(['/dashboard-po']);
   }
 
   private _actualPaginator!: MatPaginator;
