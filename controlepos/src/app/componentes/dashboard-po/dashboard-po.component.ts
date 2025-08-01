@@ -70,6 +70,9 @@ export class DashboardPoComponent implements OnInit {
   showDataLabel: boolean = true; // Rótulos de dados adicionados
   showXAxisLabel: boolean = true;
   showYAxisLabel: boolean = true;
+  
+  // Escala Y global para manter gráficos comparáveis
+  yScaleMax: number = 0;
   colorScheme: Color = {
     name: 'custom',
     selectable: true,
@@ -115,6 +118,9 @@ export class DashboardPoComponent implements OnInit {
   loadChartData(): void {
     if (!this.range.value.start || !this.range.value.end) { return; }
 
+    let completedRegions = 0;
+    const totalRegions = this.regions.length;
+
     this.regions.forEach(region => {
       this.poService.listar(region, '').subscribe(
         pos => {
@@ -124,9 +130,18 @@ export class DashboardPoComponent implements OnInit {
             this.range.value.end!
           );
           this.dataByRegion[region] = { elaborados, implantados, comparativo };
+          
+          completedRegions++;
+          if (completedRegions === totalRegions) {
+            this.calculateGlobalYScale();
+          }
         },
         err => {
           console.error(`Erro ao carregar dados do backend para a região ${region}:`, err);
+          completedRegions++;
+          if (completedRegions === totalRegions) {
+            this.calculateGlobalYScale();
+          }
         }
       );
     });
@@ -136,6 +151,32 @@ export class DashboardPoComponent implements OnInit {
     if (this.range.valid) {
       this.loadChartData();
     }
+  }
+
+  private calculateGlobalYScale(): void {
+    let maxValue = 0;
+    
+    // Encontra o valor máximo entre todos os dados de todas as regiões
+    this.regions.forEach(region => {
+      const data = this.dataByRegion[region];
+      
+      // Verifica elaborados
+      data.elaborados.forEach(item => {
+        if (item.value > maxValue) {
+          maxValue = item.value;
+        }
+      });
+      
+      // Verifica implantados
+      data.implantados.forEach(item => {
+        if (item.value > maxValue) {
+          maxValue = item.value;
+        }
+      });
+    });
+    
+    // Define a escala máxima com uma margem de 10%
+    this.yScaleMax = Math.ceil(maxValue * 1.1);
   }
 
   // Processa lista de POs vinda do backend e gera estruturas para os gráficos

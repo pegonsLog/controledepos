@@ -33,12 +33,21 @@
   gap: 24px;
 }
 
+/* Linha de gráficos: exibe os cards horizontalmente e permite quebra em telas menores */
+.charts-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
 .chart-card {
   background-color: #ffffff;
   border-radius: 8px;
   padding: 16px;
   display: flex;
   flex-direction: column;
+  flex: 1 1 calc(50% - 24px); /* Dois cards por linha considerando gap */
+  box-sizing: border-box;
 }
 
 .wide-card {
@@ -47,21 +56,35 @@
 
 mat-card-header {
   padding-bottom: 16px;
+  height: 60px; /* Altura fixa para alinhar títulos */
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0; /* Não permite que o header encolha */
 }
 
 mat-card-content {
   flex-grow: 1;
   display: flex;
-  align-items: stretch;
+  align-items: stretch; /* Gráfico ocupa toda altura disponível */
   justify-content: stretch;
   padding: 0;
+  min-height: 0; /* Permite que o flex-grow funcione corretamente */
 }
 
 /* Estilos para ngx-charts */
 ::ng-deep ngx-charts-bar-vertical,
 ::ng-deep ngx-charts-line-chart {
   width: 100% !important;
-  height: 100% !important;
+  height: 300px !important; /* Altura fixa para todos os gráficos */
+}
+
+/* Força altura fixa para a área de plotagem dos gráficos */
+::ng-deep ngx-charts-bar-vertical .chart {
+  height: 300px !important;
+}
+
+::ng-deep ngx-charts-bar-vertical svg {
+  height: 300px !important;
 }
 ::ng-deep .ngx-charts .grid-panel.odd line {
   stroke: #f0f0f0;
