@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { PortalModule } from '@angular/cdk/portal';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +11,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Color, NgxChartsModule, ScaleType } from '@swimlane/ngx-charts';
 import { DateAdapter, MAT_DATE_FORMATS, MatDateFormats } from '@angular/material/core';
+import { PoService } from '../../services/po.service';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 export const PT_BR_DATE_FORMATS: MatDateFormats = {
   parse: {
@@ -25,7 +29,6 @@ export const PT_BR_DATE_FORMATS: MatDateFormats = {
 @Component({
   selector: 'app-dashboard-po',
   standalone: true,
-  providers: [{ provide: MAT_DATE_FORMATS, useValue: PT_BR_DATE_FORMATS }],
   imports: [
     ReactiveFormsModule,
     MatCardModule,
@@ -35,17 +38,27 @@ export const PT_BR_DATE_FORMATS: MatDateFormats = {
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    NgxChartsModule
+    OverlayModule,
+    PortalModule,
+    NgxChartsModule,
+    RouterLink
   ],
   templateUrl: './dashboard-po.component.html',
   styleUrls: ['./dashboard-po.component.scss']
 })
 export class DashboardPoComponent implements OnInit {
 
-  // Dados para os gráficos
-  elaboradosData: any[] = [];
-  implantadosData: any[] = [];
-  comparativoData: any[] = [];
+  // Regiões que terão gráficos separados
+  regions: string[] = ['Oeste', 'Barreiro'];
+
+  // Estrutura de dados por região
+  // Propriedade auxiliar para compatibilidade com bloco antigo (será removido quando HTML for limpo)
+  region: string = 'Oeste';
+
+  dataByRegion: { [region: string]: { elaborados: any[]; implantados: any[]; comparativo: any[] } } = {
+    Oeste: { elaborados: [], implantados: [], comparativo: [] },
+    Barreiro: { elaborados: [], implantados: [], comparativo: [] }
+  };
 
   // Opções dos gráficos
   // Tamanho da área de exibição dos gráficos (largura x altura)
@@ -53,7 +66,8 @@ export class DashboardPoComponent implements OnInit {
   gradient: boolean = true;
   showXAxis: boolean = true;
   showYAxis: boolean = true;
-  showLegend: boolean = true;
+  showLegend: boolean = false; // Legenda removida
+  showDataLabel: boolean = true; // Rótulos de dados adicionados
   showXAxisLabel: boolean = true;
   showYAxisLabel: boolean = true;
   colorScheme: Color = {
@@ -75,11 +89,20 @@ export class DashboardPoComponent implements OnInit {
     end: new FormControl<Date | null>(null),
   });
 
-  constructor(private dateAdapter: DateAdapter<Date>) {
+  constructor(
+    private dateAdapter: DateAdapter<Date>,
+    private poService: PoService,
+    private route: ActivatedRoute
+  ) {
     this.dateAdapter.setLocale('pt-BR');
   }
 
   ngOnInit(): void {
+    // Inicializa intervalo padrão de datas e carrega dados para todas as regiões
+    this.initializeDateRangeAndLoad();
+  }
+
+  private initializeDateRangeAndLoad(): void {
     // Define um período padrão (últimos 12 meses)
     const endDate = new Date();
     const startDate = new Date();
@@ -90,14 +113,23 @@ export class DashboardPoComponent implements OnInit {
   }
 
   loadChartData(): void {
-    // Lógica para carregar os dados (aqui usaremos dados mock)
-    // No futuro, isso viria de um serviço (this.poService.getDashboardData())
-    if (this.range.value.start && this.range.value.end) {
-      const mockData = this.generateMockData(this.range.value.start, this.range.value.end);
-      this.elaboradosData = mockData.elaborados;
-      this.implantadosData = mockData.implantados;
-      this.comparativoData = mockData.comparativo;
-    }
+    if (!this.range.value.start || !this.range.value.end) { return; }
+
+    this.regions.forEach(region => {
+      this.poService.listar(region, '').subscribe(
+        pos => {
+          const { elaborados, implantados, comparativo } = this.processPoData(
+            pos,
+            this.range.value.start!,
+            this.range.value.end!
+          );
+          this.dataByRegion[region] = { elaborados, implantados, comparativo };
+        },
+        err => {
+          console.error(`Erro ao carregar dados do backend para a região ${region}:`, err);
+        }
+      );
+    });
   }
 
   onDateChange(): void {
@@ -106,36 +138,57 @@ export class DashboardPoComponent implements OnInit {
     }
   }
 
-  onSelect(event: any): void {
-    console.log(event);
-  }
+  // Processa lista de POs vinda do backend e gera estruturas para os gráficos
+  private processPoData(posList: any[], startDate: Date, endDate: Date) {
+    const elaboradosMap: Map<string, number> = new Map();
+    const implantadosMap: Map<string, number> = new Map();
 
-  private generateMockData(startDate: Date, endDate: Date) {
-    const elaborados = [];
-    const implantados = [];
-    const comparativo: { name: string; series: { name: string; value: number }[] }[] = [
-      { name: 'Elaborados', series: [] },
-      { name: 'Implantados', series: [] }
-    ];
-
-    let currentDate = new Date(startDate);
     const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
-    while (currentDate <= endDate) {
-      const monthYear = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear().toString().slice(-2)}`;
-      const elaboradosCount = Math.floor(Math.random() * 50) + 10;
-      const implantadosCount = Math.floor(Math.random() * elaboradosCount);
+    const isBetween = (d: Date) => d >= startDate && d <= endDate;
 
-      // Dados para gráficos de barra
-      elaborados.push({ name: monthYear, value: elaboradosCount });
-      implantados.push({ name: monthYear, value: implantadosCount });
+    const parseDate = (str: string): Date | null => {
+      if (!str) return null;
+      const parts = str.split('/');
+      if (parts.length === 3) {
+        const [dia, mes, ano] = parts;
+        return new Date(+ano, +mes - 1, +dia);
+      }
+      const date = new Date(str);
+      return isNaN(date.getTime()) ? null : date;
+    };
 
-      // Dados para gráfico de linha
-      comparativo[0].series.push({ name: monthYear, value: elaboradosCount });
-      comparativo[1].series.push({ name: monthYear, value: implantadosCount });
+    posList.forEach(po => {
+      const dataPo = parseDate(po.data_po);
+      if (dataPo && isBetween(dataPo)) {
+        const key = `${monthNames[dataPo.getMonth()]} ${dataPo.getFullYear().toString().slice(-2)}`;
+        elaboradosMap.set(key, (elaboradosMap.get(key) ?? 0) + 1);
+      }
+      const dataImpl = parseDate(po.data_implantacao);
+      if (dataImpl && isBetween(dataImpl)) {
+        const key = `${monthNames[dataImpl.getMonth()]} ${dataImpl.getFullYear().toString().slice(-2)}`;
+        implantadosMap.set(key, (implantadosMap.get(key) ?? 0) + 1);
+      }
+    });
 
-      currentDate.setMonth(currentDate.getMonth() + 1);
-    }
+    // Garante que ambos mapas tenham as mesmas chaves (meses dentro do período)
+    const allKeys = new Set<string>([...elaboradosMap.keys(), ...implantadosMap.keys()]);
+    // Ordena pelas datas reais
+    const orderedKeys = Array.from(allKeys).sort((a, b) => {
+      const [mA, yA] = a.split(' ');
+      const [mB, yB] = b.split(' ');
+      const monthIndex = (m: string) => monthNames.indexOf(m);
+      const dateA = new Date(+`20${yA}`, monthIndex(mA));
+      const dateB = new Date(+`20${yB}`, monthIndex(mB));
+      return dateA.getTime() - dateB.getTime();
+    });
+
+    const elaborados = orderedKeys.map(name => ({ name, value: elaboradosMap.get(name) ?? 0 }));
+    const implantados = orderedKeys.map(name => ({ name, value: implantadosMap.get(name) ?? 0 }));
+    const comparativo = [
+      { name: 'Elaborados', series: elaborados },
+      { name: 'Implantados', series: implantados }
+    ];
 
     return { elaborados, implantados, comparativo };
   }
