@@ -205,7 +205,7 @@ export class DashboardPoComponent implements OnInit {
         const key = `${monthNames[dataPo.getMonth()]} ${dataPo.getFullYear().toString().slice(-2)}`;
         elaboradosMap.set(key, (elaboradosMap.get(key) ?? 0) + 1);
       }
-      const dataImpl = parseDate(po.data_implantacao);
+      const dataImpl = parseDate(po.data_arquivamento);
       if (dataImpl && isBetween(dataImpl)) {
         const key = `${monthNames[dataImpl.getMonth()]} ${dataImpl.getFullYear().toString().slice(-2)}`;
         implantadosMap.set(key, (implantadosMap.get(key) ?? 0) + 1);
@@ -228,7 +228,7 @@ export class DashboardPoComponent implements OnInit {
     const implantados = orderedKeys.map(name => ({ name, value: implantadosMap.get(name) ?? 0 }));
     const comparativo = [
       { name: 'Elaborados', series: elaborados },
-      { name: 'Implantados', series: implantados }
+      { name: 'Arquivados', series: implantados }
     ];
 
     return { elaborados, implantados, comparativo };
