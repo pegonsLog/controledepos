@@ -281,6 +281,14 @@
     word-break: break-word;
   }
 
+  .col-numero-po {
+    max-width: none !important;
+    min-width: 200px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+  }
+
   .col-acoes {
     width: 140px;
     min-width: 140px;
@@ -362,6 +370,40 @@
     svg {
       stroke: white;
     }
+  }
+}
+
+.icon-btn-pdf {
+  background: rgba(99, 102, 241, 0.1);
+  width: 28px;
+  height: 28px;
+
+  svg {
+    stroke: var(--primary-color);
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: var(--primary-color);
+
+    svg {
+      stroke: white;
+    }
+  }
+}
+
+.po-number-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .po-number {
+    flex: 1;
+    min-width: 0;
+    overflow: visible;
+    text-overflow: unset;
+    white-space: nowrap;
   }
 }
 

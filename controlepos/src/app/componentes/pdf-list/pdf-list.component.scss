@@ -208,6 +208,12 @@
       border-bottom: 1px solid var(--border-color);
     }
   }
+
+  .col-action {
+    width: 60px;
+    min-width: 60px;
+    text-align: center !important;
+  }
 }
 
 .file-row {
@@ -250,6 +256,32 @@
       background: var(--secondary-color);
       color: white;
     }
+  }
+}
+
+.open-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--secondary-color);
+  text-decoration: none;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background: var(--secondary-color);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
   }
 }
 

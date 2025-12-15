@@ -15,8 +15,8 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 
 // Interface Planilha e array planilhas não são mais necessários com a abordagem de rota
 // interface Planilha {
-//   dados: any[]; 
-// }   
+//   dados: any[];
+// }
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -144,6 +144,8 @@ export class PoListaComponent implements OnInit, AfterViewInit {
       // Este caso não deve ocorrer se dataSource é inicializado na declaração da propriedade
     }
   }
+
+  @ViewChild(PdfListComponent) pdfListComponent!: PdfListComponent;
 
   totalItems: number = 0;
   pageSize: number = 5;
@@ -388,6 +390,54 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     this.selectedRow = this.selectedRow === row ? null : row;
     if (this.selectedRow) {
       this.selecionarPo.emit(this.selectedRow.numero_po);
+    }
+  }
+
+  // Método para extrair 7 dígitos do número do PO (finalizando 3 algarismos antes do fim)
+  extrairNumeroParaPdf(numeroPo: string): string {
+    if (!numeroPo) return '';
+
+    // Remove todos os caracteres não numéricos
+    const apenasNumeros = numeroPo.replace(/\D/g, '');
+
+    // Se tem menos de 7 dígitos, retorna o que tem
+    if (apenasNumeros.length < 7) return apenasNumeros;
+
+    // Para o exemplo "15VH-0046790/24":
+    // apenasNumeros = "1504679024" (10 dígitos)
+    // Queremos pegar "0046790" (7 dígitos)
+    // Observando o padrão: "15" + "0046790" + "24"
+    // Parece que queremos os 7 dígitos do meio, excluindo os primeiros e últimos
+
+    if (apenasNumeros.length === 7) {
+      return apenasNumeros; // Se tem exatamente 7, retorna todos
+    }
+
+    // Se tem mais de 7, tenta encontrar o padrão
+    // Remove os últimos 2-3 dígitos (ano) e pega 7 dígitos antes disso
+    const semAno = apenasNumeros.substring(0, apenasNumeros.length - 2); // Remove últimos 2 dígitos
+
+    if (semAno.length >= 7) {
+      return semAno.substring(semAno.length - 7); // Pega os últimos 7 dígitos do que sobrou
+    }
+
+    return apenasNumeros.substring(0, 7); // Fallback: pega os primeiros 7
+  }
+
+  // Método para buscar PDF automaticamente baseado no número do PO
+  buscarPdfPorNumeroPo(numeroPo: string): void {
+    const numeroExtraido = this.extrairNumeroParaPdf(numeroPo);
+    if (numeroExtraido) {
+      // Usa o ViewChild para acessar diretamente o componente pdf-list
+      if (this.pdfListComponent) {
+        this.pdfListComponent.aplicarFiltroAutomatico(numeroExtraido);
+        // Mostra uma mensagem informativa
+        this.snackBar.open(`Buscando PDFs com o número: ${numeroExtraido}`, 'Fechar', { duration: 3000 });
+      } else {
+        this.snackBar.open('Componente de PDFs não encontrado', 'Fechar', { duration: 3000 });
+      }
+    } else {
+      this.snackBar.open('Não foi possível extrair número válido do PO para busca de PDF', 'Fechar', { duration: 3000 });
     }
   }
 

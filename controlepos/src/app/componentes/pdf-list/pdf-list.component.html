@@ -1,4 +1,4 @@
-<mat-card class="pdf-list-card animate-fade-in">
+""<mat-card class="pdf-list-card animate-fade-in">
   <div class="card-header">
     <div class="header-content">
       <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -96,6 +96,18 @@
 
     <div class="table-container" *ngIf="!loading && !errorMessage && dataSource.data.length > 0">
       <table mat-table [dataSource]="dataSource">
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef class="col-action">Ação</th>
+          <td mat-cell *matCellDef="let file" class="col-action">
+            <a [href]="file.url" target="_blank" rel="noopener" class="open-btn" title="Abrir PDF">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+            </a>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef>Nome do Arquivo</th>
           <td mat-cell *matCellDef="let file">
@@ -105,19 +117,12 @@
                   d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>
               <span class="file-name">{{file.name}}</span>
-              <a [href]="file.url" target="_blank" rel="noopener" class="open-link">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                </svg>
-                Abrir
-              </a>
             </div>
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="['name']"></tr>
-        <tr mat-row *matRowDef="let row; columns: ['name'];"></tr>
+        <tr mat-header-row *matHeaderRowDef="['action', 'name']"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['action', 'name'];"></tr>
       </table>
       <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
     </div>

@@ -48,6 +48,8 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
 
   constructor(private pdfService: PdfService, private cdr: ChangeDetectorRef, private router: Router) { }
 
+
+
   ngOnChanges(changes: SimpleChanges): void {
     // Reage quando o valor de 'sheetName' é passado pelo componente pai
     if (changes['sheetName'] && changes['sheetName'].currentValue) {
@@ -109,5 +111,20 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
 
   navegarParaMenu(): void {
     this.router.navigate(['/menu']);
+  }
+
+  aplicarFiltroAutomatico(filtro: string): void {
+    // Limpa todos os filtros primeiro
+    this.searchTerm = '';
+    this.searchTerm2 = '';
+    this.searchTerm3 = '';
+    this.searchTerm4 = '';
+
+    // Aplica o filtro no primeiro campo
+    this.searchTerm = filtro;
+    this.filterPdfFiles();
+
+    // Força a detecção de mudanças para atualizar a interface
+    this.cdr.detectChanges();
   }
 }
