@@ -1,139 +1,146 @@
-<div class="po-form-container">
-  <div *ngIf="isLoading" class="loading-spinner-overlay">
-    <mat-spinner></mat-spinner>
-  </div>
-
-  <h2>{{ pageTitle }}</h2>
-  <form [formGroup]="poForm" (ngSubmit)="onSubmit()" class="po-form">
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Número do PO</mat-label>
-      <input matInput formControlName="numero_po" placeholder="Ex: PO-12345">
-      <mat-error *ngIf="poForm.get('numero_po')?.hasError('required')">
-        Número do PO é obrigatório.
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Data do PO</mat-label>
-      <input matInput formControlName="data_po" placeholder="dd/mm/aaaa" appAutoDateSlash>
-      <mat-error *ngIf="poForm.get('data_po')?.hasError('required')">
-        Data do PO é obrigatória.   
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Tipo de Logradouro</mat-label>
-      <mat-select formControlName="tipo_logradouro">
-        <mat-option *ngFor="let tipo of tiposLogradouro$ | async" [value]="tipo">
-          {{ tipo }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Logradouro</mat-label>
-      <input matInput formControlName="logradouro" placeholder="Ex: Principal">
-      <mat-error *ngIf="poForm.get('logradouro')?.hasError('required')">
-        Logradouro é obrigatório.
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Complemento</mat-label>
-      <input matInput formControlName="complemento" placeholder="Ex: Apto 101, Bloco B">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Analista</mat-label>
-      <mat-select formControlName="analista">
-        <mat-option *ngFor="let analista of analistas$ | async" [value]="analista">
-          {{ analista }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Data de Implantação</mat-label>
-      <input matInput formControlName="data_implantacao" placeholder="dd/mm/aaaa" appAutoDateSlash>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Funcionário Responsável</mat-label>
-      <mat-select formControlName="funcionario_responsavel">
-        <mat-option *ngFor="let funcionario of funcionariosResponsaveis$ | async" [value]="funcionario">
-          {{ funcionario }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Bairro</mat-label>
-      <input matInput formControlName="bairro" placeholder="Nome do bairro">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field-full-width">
-      <mat-label>Observações</mat-label>
-      <textarea matInput formControlName="observacoes" placeholder="Detalhes adicionais..."></textarea>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field-full-width">
-      <mat-label>Detalhamento</mat-label>
-      <textarea matInput formControlName="detalhamento" placeholder="Informações detalhadas sobre o PO..."></textarea>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field-full-width">
-      <mat-label>Especificações</mat-label>
-      <textarea matInput formControlName="especificacoes" placeholder="Requisitos técnicos..."></textarea>
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Situação</mat-label>
-      <mat-select formControlName="situacao">
-        <mat-option *ngFor="let situacao of situacoes$ | async" [value]="situacao">
-          {{ situacao }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Solicitante</mat-label>
-      <input matInput formControlName="solicitante" placeholder="Nome do solicitante">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Tipo de Solicitante</mat-label>
-      <mat-select formControlName="tipo_solicitante">
-        <mat-option *ngFor="let tipo of tiposDeSolicitante$ | async" [value]="tipo">
-          {{ tipo }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Data Enc. DRO</mat-label>
-      <input matInput formControlName="data_enc_dro" placeholder="dd/mm/aaaa" appAutoDateSlash>
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Nº Controle</mat-label>
-      <input matInput formControlName="numero_controle" placeholder="Ex: CTRL-001">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Data Arquivamento</mat-label>
-      <input matInput formControlName="data_arquivamento" placeholder="dd/mm/aaaa" appAutoDateSlash>
-    </mat-form-field>
-
-    <div class="form-actions">
-      <button mat-raised-button color="primary" type="submit" [disabled]="!poForm.valid || isLoading">
-        Salvar PO
-      </button>
-      <button mat-stroked-button type="button" (click)="cancelar()" [disabled]="isLoading" style="margin-left: 8px;">
-        Voltar para Lista
-      </button>
-      <button mat-stroked-button color="warn" type="button" (click)="poForm.reset()" [disabled]="isLoading" style="margin-left: 8px;">
-        Limpar
-      </button>
+<div class="form-wrapper animate-fade-in">
+  <div class="form-container">
+    <div *ngIf="isLoading" class="loading-overlay">
+      <div class="loading-spinner"></div>
     </div>
 
-  </form>
+    <div class="form-header">
+      <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h2>{{ pageTitle }}</h2>
+    </div>
+
+    <form [formGroup]="poForm" (ngSubmit)="onSubmit()" class="po-form">
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Número do PO</mat-label>
+          <input matInput formControlName="numero_po" placeholder="Ex: PO-12345">
+          <mat-error *ngIf="poForm.get('numero_po')?.hasError('required')">Número do PO é obrigatório.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Data do PO</mat-label>
+          <input matInput formControlName="data_po" placeholder="dd/mm/aaaa" appAutoDateSlash>
+          <mat-error *ngIf="poForm.get('data_po')?.hasError('required')">Data do PO é obrigatória.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Tipo de Logradouro</mat-label>
+          <mat-select formControlName="tipo_logradouro">
+            <mat-option *ngFor="let tipo of tiposLogradouro$ | async" [value]="tipo">{{ tipo }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Logradouro</mat-label>
+          <input matInput formControlName="logradouro" placeholder="Ex: Principal">
+          <mat-error *ngIf="poForm.get('logradouro')?.hasError('required')">Logradouro é obrigatório.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Complemento</mat-label>
+          <input matInput formControlName="complemento" placeholder="Ex: Apto 101, Bloco B">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Analista</mat-label>
+          <mat-select formControlName="analista">
+            <mat-option *ngFor="let analista of analistas$ | async" [value]="analista">{{ analista }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Data de Implantação</mat-label>
+          <input matInput formControlName="data_implantacao" placeholder="dd/mm/aaaa" appAutoDateSlash>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Funcionário Responsável</mat-label>
+          <mat-select formControlName="funcionario_responsavel">
+            <mat-option *ngFor="let funcionario of funcionariosResponsaveis$ | async" [value]="funcionario">{{
+              funcionario }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Bairro</mat-label>
+          <input matInput formControlName="bairro" placeholder="Nome do bairro">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field form-field-full">
+          <mat-label>Observações</mat-label>
+          <textarea matInput formControlName="observacoes" placeholder="Detalhes adicionais..." rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field form-field-full">
+          <mat-label>Detalhamento</mat-label>
+          <textarea matInput formControlName="detalhamento" placeholder="Informações detalhadas sobre o PO..."
+            rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field form-field-full">
+          <mat-label>Especificações</mat-label>
+          <textarea matInput formControlName="especificacoes" placeholder="Requisitos técnicos..." rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Situação</mat-label>
+          <mat-select formControlName="situacao">
+            <mat-option *ngFor="let situacao of situacoes$ | async" [value]="situacao">{{ situacao }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Solicitante</mat-label>
+          <input matInput formControlName="solicitante" placeholder="Nome do solicitante">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Tipo de Solicitante</mat-label>
+          <mat-select formControlName="tipo_solicitante">
+            <mat-option *ngFor="let tipo of tiposDeSolicitante$ | async" [value]="tipo">{{ tipo }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Data Enc. DRO</mat-label>
+          <input matInput formControlName="data_enc_dro" placeholder="dd/mm/aaaa" appAutoDateSlash>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Nº Controle</mat-label>
+          <input matInput formControlName="numero_controle" placeholder="Ex: CTRL-001">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Data Arquivamento</mat-label>
+          <input matInput formControlName="data_arquivamento" placeholder="dd/mm/aaaa" appAutoDateSlash>
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="poForm.reset()" [disabled]="isLoading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
+          Limpar
+        </button>
+        <button type="button" class="btn-outline" (click)="cancelar()" [disabled]="isLoading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+          </svg>
+          Voltar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="!poForm.valid || isLoading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Salvar PO
+        </button>
+      </div>
+    </form>
+  </div>
 </div>

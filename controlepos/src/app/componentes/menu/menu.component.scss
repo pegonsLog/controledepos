@@ -1,27 +1,187 @@
+.menu-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
 .menu-container {
+  width: 100%;
+  max-width: 480px;
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  overflow: hidden;
+}
+
+.menu-header {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--primary-dark) 100%
+  );
+  color: white;
+  padding: 40px 32px;
+  text-align: center;
+
+  .logo-icon {
+    width: 72px;
+    height: 72px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 18px;
     display: flex;
-    flex-direction: column; // Empilha os botões verticalmente
-    justify-content: center; // Centraliza verticalmente na viewport
-    align-items: center; // Centraliza horizontalmente na viewport
-    min-height: 100vh; // Faz o container ocupar toda a altura da viewport
-    width: 100%;
-  
-    button {
-      margin-bottom: 16px; // Espaçamento entre os botões
-      min-width: 300px; // Largura mínima para os botões
-      height: 70px;
-      font-family: 'Montserrat', sans-serif;
-    }
-  
-    button:last-child {
-      margin-bottom: 0; // Remove a margem do último botão
-    }
-    .action-button {
-      background-color: #f8f2dd;
-      color: #3f51b5;
-    }
-    .action-button-blue {
-      background-color: #dce9f3;
-      color: #3f51b5;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+
+    svg {
+      width: 36px;
+      height: 36px;
+      stroke: white;
     }
   }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.025em;
+  }
+
+  p {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin: 0;
+    font-weight: 400;
+  }
+}
+
+.menu-options {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.menu-button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: "Montserrat", sans-serif;
+
+  &:hover {
+    transform: translateX(4px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .button-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  .button-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .button-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .button-subtitle {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+  }
+
+  .arrow-icon {
+    width: 20px;
+    height: 20px;
+    stroke: var(--text-muted);
+    transition: transform 0.2s ease;
+  }
+
+  &:hover .arrow-icon {
+    transform: translateX(4px);
+  }
+}
+
+.menu-button-primary {
+  .button-icon {
+    background: linear-gradient(
+      135deg,
+      var(--primary-color) 0%,
+      var(--primary-light) 100%
+    );
+
+    svg {
+      stroke: white;
+    }
+  }
+
+  &:hover {
+    border-color: var(--primary-light);
+    background: rgba(79, 70, 229, 0.05);
+  }
+}
+
+.menu-button-secondary {
+  .button-icon {
+    background: linear-gradient(
+      135deg,
+      var(--secondary-color) 0%,
+      #0891b2 100%
+    );
+
+    svg {
+      stroke: white;
+    }
+  }
+
+  &:hover {
+    border-color: var(--secondary-color);
+    background: rgba(6, 182, 212, 0.05);
+  }
+}
+
+.menu-button-logout {
+  margin-top: 8px;
+  border: 2px solid var(--border-color);
+  background: white;
+
+  .button-icon {
+    background: linear-gradient(135deg, #f87171 0%, var(--danger-color) 100%);
+
+    svg {
+      stroke: white;
+    }
+  }
+
+  &:hover {
+    border-color: var(--danger-color);
+    background: rgba(239, 68, 68, 0.05);
+  }
+}

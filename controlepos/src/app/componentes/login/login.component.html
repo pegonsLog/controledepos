@@ -1,28 +1,62 @@
-<div class="login-container">
-  <div class="login-title-box">
-    <h2>Login</h2>
+<div class="login-wrapper">
+  <div class="login-container animate-fade-in">
+    <div class="login-header">
+      <div class="logo-icon">
+        <svg class="hero-icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+        </svg>
+      </div>
+      <h1>Controle de POs</h1>
+      <p>Sistema de Gestão de POs</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="input-group">
+        <label for="usuario">Usuário</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+          </svg>
+          <input matInput formControlName="usuario" id="usuario" placeholder="Digite seu usuário" required>
+        </div>
+        <span class="error-text"
+          *ngIf="loginForm.get('usuario')?.touched && loginForm.get('usuario')?.hasError('required')">
+          Usuário é obrigatório
+        </span>
+      </div>
+
+      <div class="input-group">
+        <label for="senha">Senha</label>
+        <div class="input-wrapper">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+          <input matInput formControlName="senha" id="senha" type="password" placeholder="Digite sua senha" required>
+        </div>
+        <span class="error-text"
+          *ngIf="loginForm.get('senha')?.touched && loginForm.get('senha')?.hasError('required')">
+          Senha é obrigatória
+        </span>
+      </div>
+
+      <button type="submit" class="login-button" [disabled]="loading || loginForm.invalid">
+        <span *ngIf="!loading" class="button-content">
+          <svg class="hero-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+          </svg>
+          Entrar
+        </span>
+        <span *ngIf="loading" class="button-content">
+          <div class="spinner"></div>
+          Entrando...
+        </span>
+      </button>
+    </form>
+
+    <mat-progress-bar *ngIf="loading" mode="indeterminate" class="login-progress"></mat-progress-bar>
   </div>
-
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-    <mat-form-field appearance="outline">
-      <mat-label>Usuário</mat-label>
-      <input matInput formControlName="usuario" placeholder="Digite seu usuário" required>
-      <mat-error *ngIf="loginForm.get('usuario')?.touched && loginForm.get('usuario')?.hasError('required')">
-        Usuário é obrigatório.
-      </mat-error>
-    </mat-form-field>
-    <mat-form-field appearance="outline">
-      <mat-label>Senha</mat-label>
-      <input matInput formControlName="senha" type="password" placeholder="Digite sua senha" required>
-      <mat-error *ngIf="loginForm.get('senha')?.touched && loginForm.get('senha')?.hasError('required')">
-        Senha é obrigatória.
-      </mat-error>
-    </mat-form-field>
-
-    <button mat-raised-button color="primary" type="submit" [disabled]="loading || loginForm.invalid" class="login-button">
-      {{ loading ? 'Entrando...' : 'Entrar' }}
-    </button>
-  </form>
-
-  <mat-progress-bar *ngIf="loading" mode="indeterminate" class="login-progress-bar"></mat-progress-bar>
 </div>

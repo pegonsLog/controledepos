@@ -1,97 +1,163 @@
-<div class="po-detalhes-container" *ngIf="po">
-  <mat-card class="po-card">
-    <mat-card-header>
-      <mat-card-title>PO nº: {{ po.numero_po }}</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="detalhes-grid">
-        <div class="detalhe-item">
-          <span class="detalhe-label">Número da PO:</span>
-          <span class="detalhe-valor">{{ po.numero_po }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Data da PO:</span>
-          <span class="detalhe-valor">{{ po.data_po }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Analista:</span>
-          <span class="detalhe-valor">{{ po.analista }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Situação:</span>
-          <span class="detalhe-valor">{{ po.situacao }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Solicitante:</span>
-          <span class="detalhe-valor">{{ po.solicitante }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Bairro:</span>
-          <span class="detalhe-valor">{{ po.bairro }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Logradouro:</span>
-          <span class="detalhe-valor">{{ po.tipo_logradouro }} {{ po.logradouro }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Complemento:</span>
-          <span class="detalhe-valor">{{ po.complemento }}</span>
-        </div>
-        <div class="detalhe-item detalhe-item-full-width">
-          <span class="detalhe-label">Detalhamento:</span>
-          <span class="detalhe-valor pre-wrap">{{ po.detalhamento }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Data de Implantação:</span>
-          <span class="detalhe-valor">{{ po.data_implantacao}}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Funcionário Responsável:</span>
-          <span class="detalhe-valor">{{ po.funcionario_responsavel }}</span>
-        </div>
-        <div class="detalhe-item detalhe-item-full-width">
-          <span class="detalhe-label">Observações:</span>
-          <span class="detalhe-valor pre-wrap">{{ po.observacoes }}</span>
-        </div>
-        <div class="detalhe-item detalhe-item-full-width">
-          <span class="detalhe-label">Especificações:</span>
-          <span class="detalhe-valor pre-wrap">{{ po.especificacoes }}</span>
-        </div>
-          <div class="detalhe-item">
-          <span class="detalhe-label">Tipo de Solicitante:</span>
-          <span class="detalhe-valor">{{ po.tipo_solicitante }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Data Encerramento DRO:</span>
-          <span class="detalhe-valor">{{ po.data_enc_dro }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Número de Controle:</span>
-          <span class="detalhe-valor">{{ po.numero_controle }}</span>
-        </div>
-        <div class="detalhe-item">
-          <span class="detalhe-label">Data de Arquivamento:</span>
-          <span class="detalhe-valor">{{ po.data_arquivamento }}</span>
+<div class="detalhes-wrapper animate-fade-in" *ngIf="po">
+  <div class="detalhes-container">
+    <div class="detalhes-header">
+      <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+      </svg>
+      <div class="header-text">
+        <h1>PO nº {{ po.numero_po }}</h1>
+        <span class="badge">{{ po.situacao || 'Sem situação' }}</span>
+      </div>
+    </div>
+
+    <div class="detalhes-content">
+      <div class="info-section">
+        <h3 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+          </svg>
+          Informações Gerais
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Número da PO</span>
+            <span class="info-value">{{ po.numero_po }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Data da PO</span>
+            <span class="info-value">{{ po.data_po }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Analista</span>
+            <span class="info-value">{{ po.analista || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Solicitante</span>
+            <span class="info-value">{{ po.solicitante || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Tipo de Solicitante</span>
+            <span class="info-value">{{ po.tipo_solicitante || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Situação</span>
+            <span class="info-value">{{ po.situacao || '-' }}</span>
+          </div>
         </div>
       </div>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-raised-button color="primary" (click)="voltarParaLista()">
-        <mat-icon>arrow_back</mat-icon>
+
+      <div class="info-section">
+        <h3 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+          </svg>
+          Localização
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Bairro</span>
+            <span class="info-value">{{ po.bairro || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Tipo de Logradouro</span>
+            <span class="info-value">{{ po.tipo_logradouro || '-' }}</span>
+          </div>
+          <div class="info-item info-item-full">
+            <span class="info-label">Logradouro</span>
+            <span class="info-value">{{ po.logradouro || '-' }}</span>
+          </div>
+          <div class="info-item info-item-full">
+            <span class="info-label">Complemento</span>
+            <span class="info-value">{{ po.complemento || '-' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+          Datas e Controle
+        </h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Data de Implantação</span>
+            <span class="info-value">{{ po.data_implantacao || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Funcionário Responsável</span>
+            <span class="info-value">{{ po.funcionario_responsavel || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Data Encerramento DRO</span>
+            <span class="info-value">{{ po.data_enc_dro || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Número de Controle</span>
+            <span class="info-value">{{ po.numero_controle || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Data de Arquivamento</span>
+            <span class="info-value">{{ po.data_arquivamento || '-' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section" *ngIf="po.detalhamento || po.observacoes || po.especificacoes">
+        <h3 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+          </svg>
+          Detalhes Adicionais
+        </h3>
+        <div class="text-blocks">
+          <div class="text-block" *ngIf="po.detalhamento">
+            <span class="text-label">Detalhamento</span>
+            <p class="text-content">{{ po.detalhamento }}</p>
+          </div>
+          <div class="text-block" *ngIf="po.observacoes">
+            <span class="text-label">Observações</span>
+            <p class="text-content">{{ po.observacoes }}</p>
+          </div>
+          <div class="text-block" *ngIf="po.especificacoes">
+            <span class="text-label">Especificações</span>
+            <p class="text-content">{{ po.especificacoes }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detalhes-actions">
+      <button class="btn-back" (click)="voltarParaLista()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+        </svg>
         Voltar para Lista
       </button>
-    </mat-card-actions>
-  </mat-card>
+    </div>
+  </div>
 </div>
 
-<div *ngIf="!po" class="po-nao-encontrada">
-  <mat-card>
-    <mat-card-content>
-      <p>PO não encontrada ou dados não disponíveis.</p>
-      <button mat-raised-button color="primary" (click)="voltarParaLista()">
-        <mat-icon>arrow_back</mat-icon>
-        Voltar para Lista
-      </button>
-    </mat-card-content>
-  </mat-card>
+<div class="not-found-wrapper animate-fade-in" *ngIf="!po">
+  <div class="not-found-container">
+    <svg class="not-found-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+    </svg>
+    <h2>PO não encontrada</h2>
+    <p>Os dados não estão disponíveis ou a PO não existe.</p>
+    <button class="btn-back" (click)="voltarParaLista()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+      </svg>
+      Voltar para Lista
+    </button>
+  </div>
 </div>

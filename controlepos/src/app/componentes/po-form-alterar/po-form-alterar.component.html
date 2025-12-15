@@ -1,118 +1,129 @@
-<div class="po-form-container">
-  <div *ngIf="isLoading" class="loading-spinner-overlay">
-    <mat-spinner></mat-spinner>
-  </div>
-
-  <h2>{{pageTitle}}</h2>
-  <form [formGroup]="poForm" (ngSubmit)="onSubmit()" class="po-form">
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Número da PO</mat-label>
-      <input matInput formControlName="numero_po" placeholder="Ex: PO-12345" readonly>
-      <mat-error *ngIf="poForm.get('numero_po')?.hasError('required')">
-        Número da PO é obrigatório.
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Data da PO</mat-label>
-      <input matInput formControlName="data_po" placeholder="dd/mm/aaaa" appAutoDateSlash>
-      <mat-error *ngIf="poForm.get('data_po')?.hasError('required')">
-        Data da PO é obrigatória.
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Tipo de Logradouro</mat-label>
-      <input matInput formControlName="tipo_logradouro" placeholder="Ex: Rua">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Logradouro</mat-label>
-      <input matInput formControlName="logradouro" placeholder="Ex: Principal">
-      <mat-error *ngIf="poForm.get('logradouro')?.hasError('required')">
-        Logradouro é obrigatório.
-      </mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Complemento</mat-label>
-      <input matInput formControlName="complemento" placeholder="Ex: Apto 101, Bloco B">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Analista</mat-label>
-      <input matInput formControlName="analista" placeholder="Nome do analista">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Data de Implantação</mat-label>
-      <input matInput formControlName="data_implantacao" placeholder="dd/mm/aaaa" appAutoDateSlash>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Funcionário Responsável</mat-label>
-      <input matInput formControlName="funcionario_responsavel" placeholder="Nome do funcionário">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Bairro</mat-label>
-      <input matInput formControlName="bairro" placeholder="Nome do bairro">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field-full-width">
-      <mat-label>Observações</mat-label>
-      <textarea matInput formControlName="observacoes" placeholder="Detalhes adicionais..."></textarea>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field-full-width">
-      <mat-label>Detalhamento</mat-label>
-      <textarea matInput formControlName="detalhamento" placeholder="Informações detalhadas sobre o PO..."></textarea>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field-full-width">
-      <mat-label>Especificações</mat-label>
-      <textarea matInput formControlName="especificacoes" placeholder="Requisitos técnicos..."></textarea>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Situação</mat-label>
-      <input matInput formControlName="situacao" placeholder="Situação atual">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Solicitante</mat-label>
-      <input matInput formControlName="solicitante" placeholder="Nome do solicitante">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Tipo de Solicitante</mat-label>
-      <input matInput formControlName="tipo_solicitante" placeholder="Tipo de solicitante">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Data Encerramento DRO</mat-label>
-      <input matInput formControlName="data_enc_dro" placeholder="dd/mm/aaaa" appAutoDateSlash>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Número de Controle</mat-label>
-      <input matInput formControlName="numero_controle" placeholder="Ex: CTRL-001">
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field">
-      <mat-label>Data de Arquivamento</mat-label>
-      <input matInput formControlName="data_arquivamento" placeholder="dd/mm/aaaa" appAutoDateSlash>
-    </mat-form-field>
-
-    <div class="form-actions">
-      <button mat-raised-button color="primary" type="submit" [disabled]="!poForm.valid || isLoading">
-        Atualizar PO
-      </button>
-      <button mat-stroked-button type="button" (click)="cancelar()" [disabled]="isLoading" style="margin-left: 8px;">
-        Voltar para Lista
-      </button>
+<div class="form-wrapper animate-fade-in">
+  <div class="form-container">
+    <div *ngIf="isLoading" class="loading-overlay">
+      <div class="loading-spinner"></div>
     </div>
 
-  </form>
+    <div class="form-header">
+      <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+      </svg>
+      <h2>{{pageTitle}}</h2>
+    </div>
+
+    <form [formGroup]="poForm" (ngSubmit)="onSubmit()" class="po-form">
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Número da PO</mat-label>
+          <input matInput formControlName="numero_po" placeholder="Ex: PO-12345" readonly>
+          <mat-error *ngIf="poForm.get('numero_po')?.hasError('required')">Número da PO é obrigatório.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Data da PO</mat-label>
+          <input matInput formControlName="data_po" placeholder="dd/mm/aaaa" appAutoDateSlash>
+          <mat-error *ngIf="poForm.get('data_po')?.hasError('required')">Data da PO é obrigatória.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Tipo de Logradouro</mat-label>
+          <input matInput formControlName="tipo_logradouro" placeholder="Ex: Rua">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Logradouro</mat-label>
+          <input matInput formControlName="logradouro" placeholder="Ex: Principal">
+          <mat-error *ngIf="poForm.get('logradouro')?.hasError('required')">Logradouro é obrigatório.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Complemento</mat-label>
+          <input matInput formControlName="complemento" placeholder="Ex: Apto 101, Bloco B">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Analista</mat-label>
+          <input matInput formControlName="analista" placeholder="Nome do analista">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Data de Implantação</mat-label>
+          <input matInput formControlName="data_implantacao" placeholder="dd/mm/aaaa" appAutoDateSlash>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Funcionário Responsável</mat-label>
+          <input matInput formControlName="funcionario_responsavel" placeholder="Nome do funcionário">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Bairro</mat-label>
+          <input matInput formControlName="bairro" placeholder="Nome do bairro">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field form-field-full">
+          <mat-label>Observações</mat-label>
+          <textarea matInput formControlName="observacoes" placeholder="Detalhes adicionais..." rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field form-field-full">
+          <mat-label>Detalhamento</mat-label>
+          <textarea matInput formControlName="detalhamento" placeholder="Informações detalhadas sobre o PO..."
+            rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field form-field-full">
+          <mat-label>Especificações</mat-label>
+          <textarea matInput formControlName="especificacoes" placeholder="Requisitos técnicos..." rows="3"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Situação</mat-label>
+          <input matInput formControlName="situacao" placeholder="Situação atual">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Solicitante</mat-label>
+          <input matInput formControlName="solicitante" placeholder="Nome do solicitante">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Tipo de Solicitante</mat-label>
+          <input matInput formControlName="tipo_solicitante" placeholder="Tipo de solicitante">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Data Encerramento DRO</mat-label>
+          <input matInput formControlName="data_enc_dro" placeholder="dd/mm/aaaa" appAutoDateSlash>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Número de Controle</mat-label>
+          <input matInput formControlName="numero_controle" placeholder="Ex: CTRL-001">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Data de Arquivamento</mat-label>
+          <input matInput formControlName="data_arquivamento" placeholder="dd/mm/aaaa" appAutoDateSlash>
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-outline" (click)="cancelar()" [disabled]="isLoading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+          </svg>
+          Voltar para Lista
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="!poForm.valid || isLoading">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Atualizar PO
+        </button>
+      </div>
+    </form>
+  </div>
 </div>

@@ -1,8 +1,29 @@
-<h1 mat-dialog-title>{{ data.title || 'Confirmação' }}</h1>
-<div mat-dialog-content>
-  <p>{{ data.message }}</p>
-</div>
-<div mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">{{ data.cancelText || 'Cancelar' }}</button>
-  <button mat-raised-button color="primary" (click)="onConfirm()" cdkFocusInitial>{{ data.confirmText || 'Confirmar' }}</button>
+<div class="dialog-container">
+  <div class="dialog-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+    </svg>
+  </div>
+
+  <h2 mat-dialog-title>{{ data.title || 'Confirmação' }}</h2>
+
+  <div mat-dialog-content>
+    <p>{{ data.message }}</p>
+  </div>
+
+  <div mat-dialog-actions>
+    <button class="btn-cancel" (click)="onCancel()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      {{ data.cancelText || 'Cancelar' }}
+    </button>
+    <button class="btn-confirm" (click)="onConfirm()" cdkFocusInitial>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+      {{ data.confirmText || 'Confirmar' }}
+    </button>
+  </div>
 </div>
