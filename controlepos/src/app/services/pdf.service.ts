@@ -19,7 +19,12 @@ export class PdfService {
 
   constructor(private http: HttpClient) { }
 
-  getPdfFiles(folderIdentifier: string): Observable<PdfFile[]> {
+  // Método específico para carregar apenas os primeiros PDFs (otimização de performance)
+  getPrimeiros(folderIdentifier: string, limit: number = 5): Observable<PdfFile[]> {
+    return this.getPdfFiles(folderIdentifier, limit);
+  }
+
+  getPdfFiles(folderIdentifier: string, limit?: number): Observable<PdfFile[]> {
     let folderId = '';
     if (folderIdentifier.toLowerCase() === 'oeste') {
       folderId = this.folderIdOeste;
@@ -28,6 +33,15 @@ export class PdfService {
     } else {
       console.error('Identificador de pasta inválido:', folderIdentifier);
       return EMPTY; // Retorna um Observable vazio se o identificador for inválido
+    }
+
+    // Se um limite for especificado, busca apenas a primeira página com o limite
+    if (limit && limit > 0) {
+      console.log(`Buscando apenas os primeiros ${limit} PDFs para a pasta ${folderIdentifier}...`);
+      return this.fetchPage(folderId, undefined, limit).pipe(
+        map(response => response.files.slice(0, limit)),
+        tap(files => console.log(`Carregados ${files.length} PDFs iniciais para ${folderIdentifier}`))
+      );
     }
 
     // Log inicial para indicar que o processo de busca de todos os arquivos começou
@@ -50,13 +64,13 @@ export class PdfService {
     );
   }
 
-  private fetchPage(folderId: string, pageToken?: string): Observable<{ files: PdfFile[], nextPageToken?: string }> {
+  private fetchPage(folderId: string, pageToken?: string, limit?: number): Observable<{ files: PdfFile[], nextPageToken?: string }> {
     let params = new HttpParams()
       .set('q', `'${folderId}' in parents and mimeType='application/pdf' and trashed=false`)
       // Solicita nextPageToken e os campos de arquivo necessários
-      .set('fields', 'nextPageToken, files(id, name, webViewLink)') 
+      .set('fields', 'nextPageToken, files(id, name, webViewLink)')
       .set('key', this.apiKey)
-      .set('pageSize', '1000'); // Define o tamanho máximo da página
+      .set('pageSize', limit ? Math.min(limit, 1000).toString() : '1000'); // Define o tamanho da página baseado no limite
 
     if (pageToken) {
       params = params.set('pageToken', pageToken);
