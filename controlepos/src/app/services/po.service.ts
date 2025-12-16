@@ -58,7 +58,20 @@ export class PoService {
     );
   }
 
-  listar(sheetName: string, filtro: string = ''): Observable<Po[]> {
+  listar(sheetName: string, filtro: string = '', limit?: number): Observable<Po[]> {
+    // Se um limite for especificado, não usar cache e buscar diretamente
+    if (limit && limit > 0) {
+      console.log(`Buscando ${limit} primeiros registros para ${sheetName}`);
+      return this.googleSheetsService.getPoSheetData(`${sheetName}!A:Z`, limit).pipe(
+        map((dados: any[][]) => this.mapSheetDataToPos(dados)),
+        map(pos => this.applyFilter(pos, filtro)),
+        catchError(error => {
+          console.error(`Erro ao buscar primeiros ${limit} registros para ${sheetName}:`, error);
+          return of([]); // Retorna array vazio em caso de erro
+        })
+      );
+    }
+
     if (this.posCache$ && this.lastSheetNameForCache === sheetName) {
       // Cache existe e é para a mesma planilha
       return this.posCache$.pipe(
@@ -89,6 +102,11 @@ export class PoService {
     this.posCache$ = null;
     this.lastSheetNameForCache = null;
     console.log('Cache de POs invalidado.');
+  }
+
+  // Método específico para carregar apenas os primeiros registros (otimização de performance)
+  listarPrimeiros(sheetName: string, limit: number = 20): Observable<Po[]> {
+    return this.listar(sheetName, '', limit);
   }
 
   getPoByNumeroPo(numero_po: string, sheetName: string): Observable<Po | undefined> {

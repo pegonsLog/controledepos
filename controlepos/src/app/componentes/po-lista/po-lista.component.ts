@@ -182,6 +182,7 @@ export class PoListaComponent implements OnInit, AfterViewInit {
 
   currentSheetName: string = ''; // Para armazenar o nome da aba atual
   idDaPlanilha = '1AQjzxBPFKxwfAGolCxvzOEcQBs5Z-0yKUKIxsjDXdAI';
+  modoCarregamentoOtimizado: boolean = true; // Controla se estamos no modo de carregamento otimizado
 
   constructor(
     private poService: PoService,
@@ -219,8 +220,34 @@ export class PoListaComponent implements OnInit, AfterViewInit {
 
   loadDataForSheet() {
     if (!this.currentSheetName) return;
-    // Chama buscarNaGoogleSheets com filtro vazio para carregar dados iniciais (usando cache se disponível)
-    this.buscarNaGoogleSheets('');
+    // Carrega apenas os primeiros 20 registros para otimizar a performance inicial
+    this.carregarPrimeirosRegistros();
+  }
+
+  // Método para carregar apenas os primeiros 20 registros (otimização)
+  carregarPrimeirosRegistros() {
+    if (!this.currentSheetName) return;
+
+    this.isLoading = true;
+    console.log('Carregando primeiros 20 registros para otimizar performance...');
+
+    this.poService.listarPrimeiros(this.currentSheetName, 20).subscribe({
+      next: (pos) => {
+        this.pos = pos;
+        this.dataSource.data = pos;
+        this.totalItems = pos.length;
+        this.isLoading = false;
+
+
+
+        console.log(`Carregados ${pos.length} registros iniciais para ${this.currentSheetName}`);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.snackBar.open(`Erro ao carregar dados da planilha ${this.currentSheetName}.`, 'Fechar', { duration: 3000 });
+        console.error('Erro ao carregar primeiros registros:', error);
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -250,8 +277,18 @@ export class PoListaComponent implements OnInit, AfterViewInit {
   }
 
   aplicarFiltro() {
-    // Ao aplicar filtro, usamos o currentSheetName já definido
-    this.buscarNaGoogleSheets(this.filtro);
+    // Verifica se todos os filtros estão vazios
+    const todosOsFiltrosVazios = !this.filtro && !this.filtro2 && !this.filtro3 && !this.filtro4;
+
+    if (todosOsFiltrosVazios) {
+      // Se todos os filtros estão vazios, volta ao modo otimizado
+      this.modoCarregamentoOtimizado = true;
+      this.carregarPrimeirosRegistros();
+    } else {
+      // Se há algum filtro, sai do modo otimizado e busca todos os dados
+      this.modoCarregamentoOtimizado = false;
+      this.buscarNaGoogleSheets(this.filtro);
+    }
   }
 
   async buscarNaGoogleSheets(filtroPrincipal: string) {
@@ -449,4 +486,23 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     // Navegar para a rota de novo PO, passando o sheetName
     this.router.navigate(['/formulario-po', this.currentSheetName]);
   }
+
+  // Método para carregar todos os registros baseado no período de anos
+  carregarTodosPorPeriodo() {
+    if (!this.currentSheetName) return;
+    if (!this.filtroAnoInicio || !this.filtroAnoFim) {
+      this.snackBar.open('Defina o período (ano início e fim) para carregar os dados.', 'Fechar', { duration: 3000 });
+      return;
+    }
+
+    this.isLoading = true;
+    this.modoCarregamentoOtimizado = false;
+    console.log(`Carregando todos os registros do período ${this.filtroAnoInicio} - ${this.filtroAnoFim}...`);
+
+    // Usa o método buscarNaGoogleSheets que aplicará o filtro de período
+    // Os filtros de texto atuais serão mantidos e aplicados junto com o filtro de período
+    this.buscarNaGoogleSheets('');
+  }
+
+
 }

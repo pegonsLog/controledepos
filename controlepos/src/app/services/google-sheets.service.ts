@@ -38,9 +38,19 @@ export class GoogleSheetsService {
   }
 
   // Método para buscar dados da planilha principal de POs
-  public getPoSheetData(rangeWithSheetName: string): Observable<any[][]> {
+  public getPoSheetData(rangeWithSheetName: string, limit?: number): Observable<any[][]> {
     // Ex: rangeWithSheetName pode ser 'Oeste!A:Z'
-    return this._getSheetData(this.poSheetId, rangeWithSheetName);
+    // Se limit for especificado, modifica o range para limitar as linhas
+    let finalRange = rangeWithSheetName;
+
+    if (limit && limit > 0) {
+      // Extrai o nome da aba e as colunas do range
+      const [sheetName, columns] = rangeWithSheetName.split('!');
+      // Limita as linhas: A1:Z21 para pegar cabeçalho + 20 registros
+      finalRange = `${sheetName}!${columns.split(':')[0]}1:${columns.split(':')[1]}${limit + 1}`;
+    }
+
+    return this._getSheetData(this.poSheetId, finalRange);
   }
 
   // Método para buscar dados da planilha de dropdowns e retornar como string[] (primeira coluna)
@@ -118,10 +128,10 @@ export class GoogleSheetsService {
     formData.append('action', 'addPo');
     formData.append('sheetName', sheetName);
     formData.append('data', JSON.stringify(poData)); // serializa o objeto
-  
+
     return this.http.post(this.appScriptUrl, formData);
   }
-  
+
 
   // public updateSheetData(poData: any, sheetName: string, numero_po: string): Observable<any> {
   //   const payload = {
@@ -139,17 +149,17 @@ export class GoogleSheetsService {
     formData.append('sheetName', sheetName);
     formData.append('numero_po', numero_po);
     formData.append('data', JSON.stringify(poData)); // serializa o objeto
-  
+
     return this.http.post(this.appScriptUrl, formData);
   }
-  
+
   public deleteSheetDataByPoNumber(numero_po: string, sheetName: string): Observable<any> {
     const formData = new FormData();
     formData.append('action', 'deletePoByNumero');
     formData.append('sheetName', sheetName);
     formData.append('numero_po', numero_po);
     formData.append('data', JSON.stringify(numero_po)); // serializa o objeto
-  
+
     return this.http.post(this.appScriptUrl, formData);
   }
 }
