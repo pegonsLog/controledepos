@@ -105,7 +105,7 @@ export class PoService {
   }
 
   // Método específico para carregar apenas os primeiros registros (otimização de performance)
-  listarPrimeiros(sheetName: string, limit: number = 20): Observable<Po[]> {
+  listarPrimeiros(sheetName: string, limit: number = 5): Observable<Po[]> {
     return this.listar(sheetName, '', limit);
   }
 

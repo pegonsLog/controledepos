@@ -220,18 +220,18 @@ export class PoListaComponent implements OnInit, AfterViewInit {
 
   loadDataForSheet() {
     if (!this.currentSheetName) return;
-    // Carrega apenas os primeiros 20 registros para otimizar a performance inicial
+    // Carrega apenas os primeiros 5 registros para otimizar a performance inicial
     this.carregarPrimeirosRegistros();
   }
 
-  // Método para carregar apenas os primeiros 20 registros (otimização)
+  // Método para carregar apenas os primeiros 5 registros (otimização)
   carregarPrimeirosRegistros() {
     if (!this.currentSheetName) return;
 
     this.isLoading = true;
-    console.log('Carregando primeiros 20 registros para otimizar performance...');
+    console.log('Carregando primeiros 5 registros para otimizar performance...');
 
-    this.poService.listarPrimeiros(this.currentSheetName, 20).subscribe({
+    this.poService.listarPrimeiros(this.currentSheetName, 5).subscribe({
       next: (pos) => {
         this.pos = pos;
         this.dataSource.data = pos;
