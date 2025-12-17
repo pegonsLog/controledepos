@@ -43,7 +43,6 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
   loading = true;
   errorMessage = '';
   tituloRegional: string = '';
-  modoCarregamentoOtimizado: boolean = true; // Controla se estamos no modo de carregamento otimizado
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -55,7 +54,7 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
     // Reage quando o valor de 'sheetName' é passado pelo componente pai
     if (changes['sheetName'] && changes['sheetName'].currentValue) {
       this.tituloRegional = this.sheetName.toUpperCase();
-      this.carregarPrimeiros();
+      this.loadPdfFiles();
     }
   }
 
@@ -64,40 +63,14 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
     this.dataSource.paginator = this.paginator;
   }
 
-  // Método para carregar apenas os primeiros 5 PDFs (otimização)
-  carregarPrimeiros(): void {
+  loadPdfFiles(): void {
     this.loading = true;
     this.errorMessage = '';
-    this.modoCarregamentoOtimizado = true;
-    console.log('Carregando primeiros 5 PDFs para otimizar performance...');
-
-    this.pdfService.getPrimeiros(this.sheetName, 5).subscribe({
+    this.pdfService.getPdfFiles(this.sheetName).subscribe({
       next: (files) => {
         this.allPdfFiles = files;
         this.limparFiltro('searchTerm'); // Limpa todos os filtros
         this.filterPdfFiles(); // Aplica os filtros (agora vazios) e atualiza a tabela
-        this.loading = false;
-        console.log(`Carregados ${files.length} PDFs iniciais para ${this.sheetName}`);
-        this.cdr.detectChanges(); // Garante que a view seja atualizada
-      },
-      error: (error) => {
-        this.errorMessage = `Erro ao carregar os arquivos da regional ${this.sheetName}.`;
-        console.error(`Erro ao buscar os PDFs para ${this.sheetName}:`, error);
-        this.allPdfFiles = [];
-        this.dataSource.data = [];
-        this.loading = false;
-      }
-    });
-  }
-
-  loadPdfFiles(): void {
-    this.loading = true;
-    this.errorMessage = '';
-    this.modoCarregamentoOtimizado = false;
-    this.pdfService.getPdfFiles(this.sheetName).subscribe({
-      next: (files) => {
-        this.allPdfFiles = files;
-        this.filterPdfFiles(); // Aplica os filtros atuais e atualiza a tabela
         this.loading = false;
         this.cdr.detectChanges(); // Garante que a view seja atualizada
       },
@@ -121,33 +94,16 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
   }
 
   filterPdfFiles(): void {
-    // Verifica se há algum filtro ativo
-    const temFiltroAtivo = this.searchTerm || this.searchTerm2 || this.searchTerm3 || this.searchTerm4;
-
-    // Se há filtro ativo e estamos no modo otimizado, carrega todos os dados
-    if (temFiltroAtivo && this.modoCarregamentoOtimizado) {
-      this.loadPdfFiles(); // Carrega todos os PDFs para filtrar
-      return;
-    }
-
-    // Se todos os filtros estão vazios e não estamos no modo otimizado, volta ao modo otimizado
-    if (!temFiltroAtivo && !this.modoCarregamentoOtimizado) {
-      this.carregarPrimeiros();
-      return;
-    }
-
     if (!this.allPdfFiles) {
       this.dataSource.data = [];
       return;
     }
-
     this.dataSource.data = this.allPdfFiles.filter(file =>
       file.name.toLowerCase().includes(this.searchTerm.toLowerCase()) &&
       file.name.toLowerCase().includes(this.searchTerm2.toLowerCase()) &&
       file.name.toLowerCase().includes(this.searchTerm3.toLowerCase()) &&
       file.name.toLowerCase().includes(this.searchTerm4.toLowerCase())
     );
-
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
@@ -166,13 +122,7 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
 
     // Aplica o filtro no primeiro campo
     this.searchTerm = filtro;
-
-    // Se estamos no modo otimizado, carrega todos os dados para filtrar
-    if (this.modoCarregamentoOtimizado) {
-      this.loadPdfFiles();
-    } else {
-      this.filterPdfFiles();
-    }
+    this.filterPdfFiles();
 
     // Força a detecção de mudanças para atualizar a interface
     this.cdr.detectChanges();
