@@ -34,13 +34,12 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 export class PdfListComponent implements OnChanges, AfterViewInit {
   @Input() sheetName: string = ''; // Receberá a regional ('Oeste', 'Barreiro') do componente pai
 
-  allPdfFiles: PdfFile[] = [];
   dataSource = new MatTableDataSource<PdfFile>([]);
   searchTerm = '';
   searchTerm2 = '';
   searchTerm3 = '';
   searchTerm4 = '';
-  loading = true;
+  loading = false;
   errorMessage = '';
   tituloRegional: string = '';
 
@@ -48,36 +47,46 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
 
   constructor(private pdfService: PdfService, private cdr: ChangeDetectorRef, private router: Router) { }
 
-
-
   ngOnChanges(changes: SimpleChanges): void {
-    // Reage quando o valor de 'sheetName' é passado pelo componente pai
     if (changes['sheetName'] && changes['sheetName'].currentValue) {
       this.tituloRegional = this.sheetName.toUpperCase();
-      this.loadPdfFiles();
+      // Não carrega mais automaticamente - aguarda busca do usuário
+      this.limparFiltro('searchTerm');
     }
   }
 
   ngAfterViewInit() {
-    // Configura o paginador para a tabela
     this.dataSource.paginator = this.paginator;
   }
 
-  loadPdfFiles(): void {
+  // Busca PDFs diretamente no Google Drive
+  searchPdfFiles(): void {
+    const termoPrincipal = this.searchTerm.trim();
+    if (!termoPrincipal) {
+      this.dataSource.data = [];
+      return;
+    }
+
     this.loading = true;
     this.errorMessage = '';
-    this.pdfService.getPdfFiles(this.sheetName).subscribe({
+
+    this.pdfService.searchPdfFiles(this.sheetName, termoPrincipal).subscribe({
       next: (files) => {
-        this.allPdfFiles = files;
-        this.limparFiltro('searchTerm'); // Limpa todos os filtros
-        this.filterPdfFiles(); // Aplica os filtros (agora vazios) e atualiza a tabela
+        // Aplica filtros adicionais localmente (searchTerm2, 3, 4)
+        this.dataSource.data = files.filter(file =>
+          file.name.toLowerCase().includes(this.searchTerm2.toLowerCase()) &&
+          file.name.toLowerCase().includes(this.searchTerm3.toLowerCase()) &&
+          file.name.toLowerCase().includes(this.searchTerm4.toLowerCase())
+        );
         this.loading = false;
-        this.cdr.detectChanges(); // Garante que a view seja atualizada
+        if (this.dataSource.paginator) {
+          this.dataSource.paginator.firstPage();
+        }
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        this.errorMessage = `Erro ao carregar os arquivos da regional ${this.sheetName}.`;
-        console.error(`Erro ao buscar os PDFs para ${this.sheetName}:`, error);
-        this.allPdfFiles = [];
+        this.errorMessage = `Erro ao buscar arquivos.`;
+        console.error(`Erro ao buscar PDFs:`, error);
         this.dataSource.data = [];
         this.loading = false;
       }
@@ -85,27 +94,18 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
   }
 
   limparFiltro(filtro: 'searchTerm' | 'searchTerm2' | 'searchTerm3' | 'searchTerm4'): void {
-    // Limpa todos os filtros para uma nova busca
     this.searchTerm = '';
     this.searchTerm2 = '';
     this.searchTerm3 = '';
     this.searchTerm4 = '';
-    this.filterPdfFiles();
+    this.dataSource.data = [];
   }
 
+  // Filtra localmente os resultados já carregados (para filtros secundários)
   filterPdfFiles(): void {
-    if (!this.allPdfFiles) {
-      this.dataSource.data = [];
-      return;
-    }
-    this.dataSource.data = this.allPdfFiles.filter(file =>
-      file.name.toLowerCase().includes(this.searchTerm.toLowerCase()) &&
-      file.name.toLowerCase().includes(this.searchTerm2.toLowerCase()) &&
-      file.name.toLowerCase().includes(this.searchTerm3.toLowerCase()) &&
-      file.name.toLowerCase().includes(this.searchTerm4.toLowerCase())
-    );
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
+    // Se não tem termo principal, faz nova busca
+    if (this.searchTerm.trim()) {
+      this.searchPdfFiles();
     }
   }
 
@@ -113,18 +113,16 @@ export class PdfListComponent implements OnChanges, AfterViewInit {
     this.router.navigate(['/menu']);
   }
 
+  // Chamado quando clica no botão da lista de POs
   aplicarFiltroAutomatico(filtro: string): void {
-    // Limpa todos os filtros primeiro
     this.searchTerm = '';
     this.searchTerm2 = '';
     this.searchTerm3 = '';
     this.searchTerm4 = '';
 
-    // Aplica o filtro no primeiro campo
     this.searchTerm = filtro;
-    this.filterPdfFiles();
+    this.searchPdfFiles(); // Busca diretamente no Google Drive
 
-    // Força a detecção de mudanças para atualizar a interface
     this.cdr.detectChanges();
   }
 }
