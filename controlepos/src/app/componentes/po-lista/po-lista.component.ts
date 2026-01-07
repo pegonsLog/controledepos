@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { AfterViewInit, Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog'; // Importar MatDialog e MatDialogModule
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // Importar MatSnackBar e MatSnackBarModule
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -25,7 +24,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
@@ -44,7 +42,6 @@ import { MatDividerModule } from '@angular/material/divider';
     MatCardModule,
     MatTableModule,
     MatSortModule,
-    MatPaginatorModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
@@ -59,7 +56,7 @@ import { MatDividerModule } from '@angular/material/divider';
     PdfListComponent
   ]
 })
-export class PoListaComponent implements OnInit, AfterViewInit {
+export class PoListaComponent implements OnInit {
   public isAdminUser = false; // Adicionado para controle de acesso
   isLoading: boolean = false;
   public sheetName: string = '';
@@ -133,22 +130,11 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/dashboard-po']);
   }
 
-  private _actualPaginator!: MatPaginator;
-
-  @ViewChild(MatPaginator)
-  set paginator(paginator: MatPaginator) {
-    this._actualPaginator = paginator;
-    if (this.dataSource) { // dataSource é inicializado como propriedade da classe
-      this.dataSource.paginator = this._actualPaginator;
-    } else {
-      // Este caso não deve ocorrer se dataSource é inicializado na declaração da propriedade
-    }
-  }
-
   @ViewChild(PdfListComponent) pdfListComponent!: PdfListComponent;
 
   totalItems: number = 0;
-  pageSize: number = 5;
+  totalRegistrosBase: number = 0; // Total de registros antes do filtro
+  registrosFiltrados: number = 0; // Quantidade de registros após filtro
 
   displayedColumns = [
     'numero_po',
@@ -229,6 +215,7 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     if (!this.currentSheetName) return;
 
     this.isLoading = true;
+    this.modoCarregamentoOtimizado = true;
     console.log('Carregando primeiros 5 registros para otimizar performance...');
 
     this.poService.listarPrimeiros(this.currentSheetName, 5).subscribe({
@@ -236,9 +223,8 @@ export class PoListaComponent implements OnInit, AfterViewInit {
         this.pos = pos;
         this.dataSource.data = pos;
         this.totalItems = pos.length;
+        this.registrosFiltrados = 0;
         this.isLoading = false;
-
-
 
         console.log(`Carregados ${pos.length} registros iniciais para ${this.currentSheetName}`);
       },
@@ -250,14 +236,6 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit() {
-    // O setter do paginator deve cuidar da atribuição.
-    // Se for necessário um fallback, pode ser adicionado aqui, mas idealmente o setter é suficiente.
-    if (this._actualPaginator && !this.dataSource.paginator) {
-      this.dataSource.paginator = this._actualPaginator;
-    }
-  }
-
   // O método alternarPlanilha não é mais necessário, a navegação via rota cuidará disso.
   // Se precisar recarregar dados ou mudar filtros com base em botões na mesma página,
   // esses botões deverão usar routerLink para navegar para a rota da outra aba.
@@ -267,14 +245,6 @@ export class PoListaComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/lista-pos', sheetName]);
   }
   */
-
-  onPageChange(event: PageEvent) {
-    this.pageSize = event.pageSize;
-    // A lógica de paginação é gerenciada automaticamente pelo MatTableDataSource
-    // quando seu paginator está corretamente vinculado.
-    // Se precisar de lógica adicional ao mudar de página (ex: buscar dados do servidor para a nova página),
-    // ela seria implementada aqui.
-  }
 
   aplicarFiltro() {
     // Verifica se todos os filtros estão vazios
@@ -300,6 +270,8 @@ export class PoListaComponent implements OnInit, AfterViewInit {
 
     const aplicarFiltrosSecundarios = (dados: Po[]) => {
       let dadosFiltrados = dados;
+      this.totalRegistrosBase = dados.length; // Guarda o total antes dos filtros
+
       if (this.filtro2) {
         dadosFiltrados = dadosFiltrados.filter(item => this.itemContemTermo(item, this.filtro2));
       }
@@ -364,6 +336,7 @@ export class PoListaComponent implements OnInit, AfterViewInit {
       this.pos = dadosFiltrados; // Atualiza a lista base para consistência, se necessário
       this.dataSource.data = dadosFiltrados;
       this.totalItems = dadosFiltrados.length;
+      this.registrosFiltrados = dadosFiltrados.length; // Atualiza o quantitativo filtrado
       this.isLoading = false;
     };
 
