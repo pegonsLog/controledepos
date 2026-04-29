@@ -220,9 +220,9 @@ export class PoListaComponent implements OnInit {
 
     this.poService.listarPrimeiros(this.currentSheetName, 5).subscribe({
       next: (pos) => {
-        this.pos = pos;
-        this.dataSource.data = pos;
-        this.totalItems = pos.length;
+        this.pos = this.ordenarPorDataPoDesc(pos);
+        this.dataSource.data = this.pos;
+        this.totalItems = this.pos.length;
         this.registrosFiltrados = 0;
         this.isLoading = false;
 
@@ -309,29 +309,7 @@ export class PoListaComponent implements OnInit {
         });
       }
       // Ordenar por 'data_po' em ordem decrescente
-      dadosFiltrados.sort((a, b) => {
-        const parseDate = (dateStr: any): Date | null => {
-          if (!dateStr) return null;
-          let data = new Date(dateStr);
-          if (isNaN(data.getTime())) {
-            const parts = String(dateStr).split('/');
-            if (parts.length === 3) {
-              const [dia, mes, ano] = parts;
-              // O mês no construtor do Date é 0-indexado (0-11)
-              data = new Date(Number(ano), Number(mes) - 1, Number(dia));
-            }
-          }
-          return isNaN(data.getTime()) ? null : data;
-        };
-
-        const dateA = parseDate(a.data_po);
-        const dateB = parseDate(b.data_po);
-
-        if (dateA && dateB) {
-          return dateB.getTime() - dateA.getTime(); // Descendente
-        }
-        return 0; // Mantém a ordem original se as datas forem inválidas
-      });
+      dadosFiltrados = this.ordenarPorDataPoDesc(dadosFiltrados);
 
       this.pos = dadosFiltrados; // Atualiza a lista base para consistência, se necessário
       this.dataSource.data = dadosFiltrados;
@@ -374,6 +352,34 @@ export class PoListaComponent implements OnInit {
         }
       );
     }
+  }
+
+  // Método para ordenar por data_po em ordem decrescente
+  private ordenarPorDataPoDesc(dados: Po[]): Po[] {
+    return [...dados].sort((a, b) => {
+      const parseDate = (dateStr: any): Date | null => {
+        if (!dateStr) return null;
+        let data = new Date(dateStr);
+        if (isNaN(data.getTime())) {
+          const parts = String(dateStr).split('/');
+          if (parts.length === 3) {
+            const [dia, mes, ano] = parts;
+            data = new Date(Number(ano), Number(mes) - 1, Number(dia));
+          }
+        }
+        return isNaN(data.getTime()) ? null : data;
+      };
+
+      const dateA = parseDate(a.data_po);
+      const dateB = parseDate(b.data_po);
+
+      if (dateA && dateB) {
+        return dateB.getTime() - dateA.getTime();
+      }
+      if (dateA) return -1;
+      if (dateB) return 1;
+      return 0;
+    });
   }
 
   // Método auxiliar para verificar se algum campo do item contém o termo
