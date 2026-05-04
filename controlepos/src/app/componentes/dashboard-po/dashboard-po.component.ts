@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -10,19 +10,22 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Color, NgxChartsModule, ScaleType } from '@swimlane/ngx-charts';
-import { DateAdapter, MAT_DATE_FORMATS, MatDateFormats } from '@angular/material/core';
+import { DateAdapter, MatDateFormats } from '@angular/material/core';
 import { PoService } from '../../services/po.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { CommonModule, DatePipe } from '@angular/common';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 export const PT_BR_DATE_FORMATS: MatDateFormats = {
   parse: {
-    dateInput: 'DD/MM/YYYY',
+    dateInput: 'dd/MM/yyyy',
   },
   display: {
-    dateInput: 'DD/MM/YYYY',
-    monthYearLabel: 'MMM YYYY',
-    dateA11yLabel: 'LL',
-    monthYearA11yLabel: 'MMMM YYYY',
+    dateInput: 'dd/MM/yyyy',
+    monthYearLabel: 'MMM yyyy',
+    dateA11yLabel: 'dd/MM/yyyy',
+    monthYearA11yLabel: 'MMMM yyyy',
   },
 };
 
@@ -30,6 +33,7 @@ export const PT_BR_DATE_FORMATS: MatDateFormats = {
   selector: 'app-dashboard-po',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -43,194 +47,187 @@ export const PT_BR_DATE_FORMATS: MatDateFormats = {
     NgxChartsModule,
     RouterLink
   ],
+  providers: [DatePipe],
   templateUrl: './dashboard-po.component.html',
   styleUrls: ['./dashboard-po.component.scss']
 })
 export class DashboardPoComponent implements OnInit {
 
-  // Regiões que terão gráficos separados
-  regions: string[] = ['Oeste', 'Barreiro'];
+  private regions: string[] = ['Oeste', 'Barreiro'];
 
-  // Estrutura de dados por região
-  // Propriedade auxiliar para compatibilidade com bloco antigo (será removido quando HTML for limpo)
-  region: string = 'Oeste';
+  donutData: any[] = [];
+  barData: any[] = [];
+  total: number = 0;
 
-  dataByRegion: { [region: string]: { elaborados: any[]; implantados: any[]; comparativo: any[] } } = {
-    Oeste: { elaborados: [], implantados: [], comparativo: [] },
-    Barreiro: { elaborados: [], implantados: [], comparativo: [] }
-  };
+  // Período exibido no gráfico
+  periodoLabel: string = '';
 
-  // Opções dos gráficos
-  // Tamanho da área de exibição dos gráficos (largura x altura)
-  view: [number, number] = [900, 300];
+  // Dimensões responsivas — barras (altura dinâmica por funcionário)
+  barView: [number, number] = [900, 400];
+
+  // Opções do gráfico de barras
   gradient: boolean = true;
-  showXAxis: boolean = true;
-  showYAxis: boolean = true;
-  showLegend: boolean = false; // Legenda removida
-  showDataLabel: boolean = true; // Rótulos de dados adicionados
-  showXAxisLabel: boolean = true;
-  showYAxisLabel: boolean = true;
-  
-  // Escala Y global para manter gráficos comparáveis
-  yScaleMax: number = 0;
+
   colorScheme: Color = {
     name: 'custom',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA']
-  };
-  colorSchemeLine: Color = {
-    name: 'customLine',
-    selectable: true,
-    group: ScaleType.Ordinal,
-    domain: ['#5AA454', '#A10A28']
+    domain: [
+      '#4F46E5', '#10B981', '#F59E0B', '#EF4444',
+      '#06B6D4', '#8B5CF6', '#EC4899', '#14B8A6',
+      '#F97316', '#6366F1', '#84CC16', '#0EA5E9'
+    ]
   };
 
-  // Filtro de data
+  // Dois campos de data separados
   range = new FormGroup({
     start: new FormControl<Date | null>(null),
     end: new FormControl<Date | null>(null),
   });
 
+  loading: boolean = false;
+
   constructor(
     private dateAdapter: DateAdapter<Date>,
     private poService: PoService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private datePipe: DatePipe
   ) {
     this.dateAdapter.setLocale('pt-BR');
   }
 
   ngOnInit(): void {
-    // Inicializa intervalo padrão de datas e carrega dados para todas as regiões
-    this.initializeDateRangeAndLoad();
-  }
-
-  private initializeDateRangeAndLoad(): void {
-    // Define um período padrão (últimos 12 meses)
+    this.updateChartView();
     const endDate = new Date();
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 12);
     this.range.setValue({ start: startDate, end: endDate });
-
     this.loadChartData();
   }
 
   loadChartData(): void {
-    if (!this.range.value.start || !this.range.value.end) { return; }
+    const start = this.range.value.start;
+    const end = this.range.value.end;
+    if (!start || !end) { return; }
 
-    let completedRegions = 0;
-    const totalRegions = this.regions.length;
+    this.loading = true;
+    this.periodoLabel = `${this.formatDate(start)} a ${this.formatDate(end)}`;
 
-    this.regions.forEach(region => {
-      this.poService.listar(region, '').subscribe(
-        pos => {
-          const { elaborados, implantados, comparativo } = this.processPoData(
-            pos,
-            this.range.value.start!,
-            this.range.value.end!
-          );
-          this.dataByRegion[region] = { elaborados, implantados, comparativo };
-          
-          completedRegions++;
-          if (completedRegions === totalRegions) {
-            this.calculateGlobalYScale();
-          }
-        },
-        err => {
-          console.error(`Erro ao carregar dados do backend para a região ${region}:`, err);
-          completedRegions++;
-          if (completedRegions === totalRegions) {
-            this.calculateGlobalYScale();
-          }
-        }
-      );
+    forkJoin(
+      this.regions.map(region =>
+        this.poService.listar(region, '').pipe(
+          catchError(err => {
+            console.error(`Erro ao carregar região ${region}:`, err);
+            return of([]); // garante que o forkJoin não cancele as demais regiões
+          })
+        )
+      )
+    ).subscribe({
+      next: (results) => {
+        const allPos = results.flat();
+        const { donutData, barData, total } = this.processPoData(allPos, start, end);
+        this.donutData = donutData;
+        this.barData = barData;
+        this.total = total;
+        this.loading = false;
+        // Recalcula altura do gráfico de barras agora que temos o nº de funcionários
+        this.updateChartView();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar dados:', err);
+        this.loading = false;
+      }
     });
   }
 
-  onDateChange(): void {
-    if (this.range.valid) {
+  onStartDateChange(): void {
+    if (this.range.value.start && this.range.value.end) {
       this.loadChartData();
     }
   }
 
-  private calculateGlobalYScale(): void {
-    let maxValue = 0;
-    
-    // Encontra o valor máximo entre todos os dados de todas as regiões
-    this.regions.forEach(region => {
-      const data = this.dataByRegion[region];
-      
-      // Verifica elaborados
-      data.elaborados.forEach(item => {
-        if (item.value > maxValue) {
-          maxValue = item.value;
-        }
-      });
-      
-      // Verifica implantados
-      data.implantados.forEach(item => {
-        if (item.value > maxValue) {
-          maxValue = item.value;
-        }
-      });
-    });
-    
-    // Define a escala máxima com uma margem de 10%
-    this.yScaleMax = Math.ceil(maxValue * 1.1);
+  onEndDateChange(): void {
+    if (this.range.value.start && this.range.value.end) {
+      this.loadChartData();
+    }
   }
 
-  // Processa lista de POs vinda do backend e gera estruturas para os gráficos
+  private formatDate(date: Date): string {
+    return this.datePipe.transform(date, 'dd/MM/yyyy') ?? '';
+  }
+
   private processPoData(posList: any[], startDate: Date, endDate: Date) {
-    const elaboradosMap: Map<string, number> = new Map();
-    const implantadosMap: Map<string, number> = new Map();
-
-    const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-
-    const isBetween = (d: Date) => d >= startDate && d <= endDate;
+    const funcionarioMap: Map<string, number> = new Map();
 
     const parseDate = (str: string): Date | null => {
       if (!str) return null;
-      const parts = str.split('/');
-      if (parts.length === 3) {
-        const [dia, mes, ano] = parts;
-        return new Date(+ano, +mes - 1, +dia);
+      const s = str.trim();
+
+      // Formato dd/MM/yyyy (texto salvo pelo formulário)
+      const slashParts = s.split('/');
+      if (slashParts.length === 3) {
+        const [a, b, c] = slashParts;
+        // dd/MM/yyyy
+        if (c.length === 4) {
+          const d = new Date(+c, +b - 1, +a);
+          if (!isNaN(d.getTime())) return d;
+        }
+        // MM/dd/yyyy (formato americano que o Sheets às vezes retorna)
+        if (c.length === 4) {
+          const d = new Date(+c, +a - 1, +b);
+          if (!isNaN(d.getTime()) && +a <= 12) return d;
+        }
       }
-      const date = new Date(str);
-      return isNaN(date.getTime()) ? null : date;
+
+      // Formato yyyy-MM-dd (ISO)
+      const dashParts = s.split('-');
+      if (dashParts.length === 3 && dashParts[0].length === 4) {
+        const d = new Date(+dashParts[0], +dashParts[1] - 1, +dashParts[2]);
+        if (!isNaN(d.getTime())) return d;
+      }
+
+      // Número serial do Google Sheets (dias desde 30/12/1899)
+      if (/^\d+$/.test(s)) {
+        const serial = parseInt(s, 10);
+        const d = new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
+        if (!isNaN(d.getTime())) return d;
+      }
+
+      // Fallback genérico
+      const fallback = new Date(s);
+      return isNaN(fallback.getTime()) ? null : fallback;
     };
+
+    const isBetween = (d: Date) => d >= startDate && d <= endDate;
 
     posList.forEach(po => {
       const dataPo = parseDate(po.data_po);
       if (dataPo && isBetween(dataPo)) {
-        const key = `${monthNames[dataPo.getMonth()]} ${dataPo.getFullYear().toString().slice(-2)}`;
-        elaboradosMap.set(key, (elaboradosMap.get(key) ?? 0) + 1);
-      }
-      const dataImpl = parseDate(po.data_arquivamento);
-      if (dataImpl && isBetween(dataImpl)) {
-        const key = `${monthNames[dataImpl.getMonth()]} ${dataImpl.getFullYear().toString().slice(-2)}`;
-        implantadosMap.set(key, (implantadosMap.get(key) ?? 0) + 1);
+        const funcionario = po.funcionario_responsavel?.trim() || 'Não informado';
+        funcionarioMap.set(funcionario, (funcionarioMap.get(funcionario) ?? 0) + 1);
       }
     });
 
-    // Garante que ambos mapas tenham as mesmas chaves (meses dentro do período)
-    const allKeys = new Set<string>([...elaboradosMap.keys(), ...implantadosMap.keys()]);
-    // Ordena pelas datas reais
-    const orderedKeys = Array.from(allKeys).sort((a, b) => {
-      const [mA, yA] = a.split(' ');
-      const [mB, yB] = b.split(' ');
-      const monthIndex = (m: string) => monthNames.indexOf(m);
-      const dateA = new Date(+`20${yA}`, monthIndex(mA));
-      const dateB = new Date(+`20${yB}`, monthIndex(mB));
-      return dateA.getTime() - dateB.getTime();
-    });
+    const donutData = Array.from(funcionarioMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name, value }));
 
-    const elaborados = orderedKeys.map(name => ({ name, value: elaboradosMap.get(name) ?? 0 }));
-    const implantados = orderedKeys.map(name => ({ name, value: implantadosMap.get(name) ?? 0 }));
-    const comparativo = [
-      { name: 'Elaborados', series: elaborados },
-      { name: 'Arquivados', series: implantados }
-    ];
+    const total = donutData.reduce((sum, item) => sum + item.value, 0);
 
-    return { elaborados, implantados, comparativo };
+    // barData usa o mesmo formato — ordenado do maior para o menor
+    const barData = [...donutData];
+
+    return { donutData, barData, total };
+  }
+
+  onSelect(event: any): void {}
+
+  xAxisFormat = (value: number): string => Number.isInteger(value) ? String(value) : '';
+
+  @HostListener('window:resize')
+  updateChartView(): void {
+    const width = Math.max(window.innerWidth - 96, 320);
+    const barHeight = Math.max(this.barData.length * 60 + 80, 300);
+    this.barView = [width, barHeight];
   }
 }

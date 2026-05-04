@@ -9,8 +9,7 @@ import { map, catchError, tap, shareReplay } from 'rxjs/operators';
 })
 export class PoService {
 
-  private posCache$: Observable<Po[]> | null = null;
-  private lastSheetNameForCache: string | null = null;
+  private posCacheMap: Map<string, Observable<Po[]>> = new Map();
 
   constructor(private googleSheetsService: GoogleSheetsService) {}
 
@@ -67,40 +66,38 @@ export class PoService {
         map(pos => this.applyFilter(pos, filtro)),
         catchError(error => {
           console.error(`Erro ao buscar primeiros ${limit} registros para ${sheetName}:`, error);
-          return of([]); // Retorna array vazio em caso de erro
+          return of([]);
         })
       );
     }
 
-    if (this.posCache$ && this.lastSheetNameForCache === sheetName) {
-      // Cache existe e é para a mesma planilha
-      return this.posCache$.pipe(
+    if (this.posCacheMap.has(sheetName)) {
+      return this.posCacheMap.get(sheetName)!.pipe(
         map(pos => this.applyFilter(pos, filtro))
       );
     }
 
-    // Cache não existe, é para outra planilha, ou foi invalidado
-    this.lastSheetNameForCache = sheetName;
-    this.posCache$ = this.googleSheetsService.getPoSheetData(`${sheetName}!A:Z`).pipe(
+    // Cache não existe para esta planilha — cria e armazena
+    const cache$ = this.googleSheetsService.getPoSheetData(`${sheetName}!A:Z`).pipe(
       map((dados: any[][]) => this.mapSheetDataToPos(dados)),
       tap(pos => console.log(`Cache populado para ${sheetName} com ${pos.length} itens.`)),
-      shareReplay(1), // Compartilha a última emissão e mantém o cache
       catchError(error => {
         console.error(`Erro ao buscar e popular cache para ${sheetName}:`, error);
-        this.posCache$ = null; // Invalida o cache em caso de erro na fonte
-        this.lastSheetNameForCache = null;
-        return of([]); // Retorna array vazio em caso de erro
-      })
+        this.posCacheMap.delete(sheetName); // Invalida o cache em caso de erro
+        return of([]);
+      }),
+      shareReplay(1)
     );
 
-    return this.posCache$.pipe(
+    this.posCacheMap.set(sheetName, cache$);
+
+    return cache$.pipe(
       map(pos => this.applyFilter(pos, filtro))
     );
   }
 
   public invalidateCache(): void {
-    this.posCache$ = null;
-    this.lastSheetNameForCache = null;
+    this.posCacheMap.clear();
     console.log('Cache de POs invalidado.');
   }
 

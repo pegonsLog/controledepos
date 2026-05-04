@@ -11,13 +11,13 @@ import { routes } from './app.routes';
 
 export const PT_BR_DATE_FORMATS: MatDateFormats = {
   parse: {
-    dateInput: 'DD/MM/YYYY',
+    dateInput: 'dd/MM/yyyy',
   },
   display: {
-    dateInput: 'DD/MM/YYYY',
-    monthYearLabel: 'MMM YYYY',
-    dateA11yLabel: 'LL',
-    monthYearA11yLabel: 'MMMM YYYY',
+    dateInput: 'dd/MM/yyyy',
+    monthYearLabel: 'MMM yyyy',
+    dateA11yLabel: 'dd/MM/yyyy',
+    monthYearA11yLabel: 'MMMM yyyy',
   },
 };
 

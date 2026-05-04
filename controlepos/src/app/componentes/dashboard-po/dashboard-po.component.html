@@ -7,19 +7,25 @@
       </svg>
       <div class="header-text">
         <h1>Dashboard de POs</h1>
-        <p>Análise comparativa por regional</p>
+        <p>POs realizados por funcionário responsável</p>
       </div>
     </div>
 
-    <div class="header-controls">
+    <div class="header-controls" [formGroup]="range">
       <mat-form-field appearance="outline">
-        <mat-label>Período de Análise</mat-label>
-        <mat-date-range-input [formGroup]="range" [rangePicker]="picker">
-          <input matStartDate formControlName="start" placeholder="Data início" />
-          <input matEndDate formControlName="end" placeholder="Data fim" (dateChange)="onDateChange()" />
-        </mat-date-range-input>
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-date-range-picker #picker></mat-date-range-picker>
+        <mat-label>Data início</mat-label>
+        <input matInput [matDatepicker]="pickerStart" formControlName="start"
+               placeholder="DD/MM/AAAA" (dateChange)="onStartDateChange()" />
+        <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+        <mat-datepicker #pickerStart></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data fim</mat-label>
+        <input matInput [matDatepicker]="pickerEnd" formControlName="end"
+               placeholder="DD/MM/AAAA" (dateChange)="onEndDateChange()" />
+        <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+        <mat-datepicker #pickerEnd></mat-datepicker>
       </mat-form-field>
 
       <button class="btn-back" [routerLink]="['/menu']">
@@ -31,75 +37,62 @@
     </div>
   </div>
 
-  <div class="charts-grid">
-    <!-- POs Elaborados -->
-    <div class="charts-row">
-      <ng-container *ngFor="let region of regions">
-        <div class="chart-card">
-          <div class="chart-header">
-            <svg class="chart-icon icon-elaborados" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3>POs Elaborados</h3>
-            <span class="region-badge">{{ region }}</span>
-          </div>
-          <div class="chart-content">
-            <ngx-charts-bar-vertical [scheme]="colorScheme" [results]="dataByRegion[region].elaborados"
-              [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [showDataLabel]="showDataLabel"
-              [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Mês'"
-              [yAxisLabel]="'Quantidade'" [yScaleMin]="0" [yScaleMax]="yScaleMax">
-            </ngx-charts-bar-vertical>
-          </div>
-        </div>
-      </ng-container>
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Carregando dados...</p>
+  </div>
+
+  <!-- Chart barras -->
+  <div class="chart-card chart-card--bar" *ngIf="!loading">
+    <div class="chart-header">
+      <svg class="chart-icon icon-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+      </svg>
+      <div class="chart-title">
+        <h3>Ranking de POs por Funcionário</h3>
+        <span class="periodo-label" *ngIf="periodoLabel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+          {{ periodoLabel }}
+        </span>
+      </div>
+      <div class="total-badge">
+        <span class="total-label">Total</span>
+        <span class="total-value">{{ total }}</span>
+      </div>
     </div>
 
-    <!-- POs Arquivados -->
-    <div class="charts-row">
-      <ng-container *ngFor="let region of regions">
-        <div class="chart-card">
-          <div class="chart-header">
-            <svg class="chart-icon icon-arquivados" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-            </svg>
-            <h3>POs Arquivados</h3>
-            <span class="region-badge">{{ region }}</span>
-          </div>
-          <div class="chart-content">
-            <ngx-charts-bar-vertical [scheme]="colorScheme" [results]="dataByRegion[region].implantados"
-              [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [showDataLabel]="showDataLabel"
-              [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Mês'"
-              [yAxisLabel]="'Quantidade'" [yScaleMin]="0" [yScaleMax]="yScaleMax">
-            </ngx-charts-bar-vertical>
-          </div>
-        </div>
-      </ng-container>
+    <div class="chart-content" *ngIf="barData.length > 0; else emptyStateBar">
+      <ngx-charts-bar-horizontal
+        [view]="barView"
+        [scheme]="colorScheme"
+        [results]="barData"
+        [gradient]="gradient"
+        [xAxis]="true"
+        [yAxis]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="false"
+        [xAxisLabel]="'Quantidade de POs'"
+        [showDataLabel]="true"
+        [trimXAxisTicks]="false"
+        [trimYAxisTicks]="false"
+        [xAxisTickFormatting]="xAxisFormat"
+        (select)="onSelect($event)">
+      </ngx-charts-bar-horizontal>
     </div>
 
-    <!-- Comparativo -->
-    <div class="charts-row">
-      <ng-container *ngFor="let region of regions">
-        <div class="chart-card">
-          <div class="chart-header">
-            <svg class="chart-icon icon-comparativo" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
-            </svg>
-            <h3>Elaborados vs Arquivados</h3>
-            <span class="region-badge">{{ region }}</span>
-          </div>
-          <div class="chart-content">
-            <ngx-charts-line-chart [scheme]="colorSchemeLine" [results]="dataByRegion[region].comparativo"
-              [xAxis]="showXAxis" [yAxis]="showYAxis" [showXAxisLabel]="showXAxisLabel"
-              [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Mês'" [yAxisLabel]="'Quantidade'" [autoScale]="true">
-            </ngx-charts-line-chart>
-          </div>
-        </div>
-      </ng-container>
-    </div>
+    <ng-template #emptyStateBar>
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+        </svg>
+        <p>Nenhum dado encontrado para o período selecionado.</p>
+      </div>
+    </ng-template>
   </div>
 </div>
