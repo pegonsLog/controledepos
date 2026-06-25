@@ -18,4 +18,6 @@ export interface Po {
   data_enc_dro: string;
   numero_controle: string;
   data_arquivamento: string;
+  linkDoModelo: string;
+  tipoDoArquivoModelo: string;
 }

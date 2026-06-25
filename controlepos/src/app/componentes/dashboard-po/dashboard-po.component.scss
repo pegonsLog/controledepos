@@ -304,3 +304,142 @@
     }
   }
 }
+
+// ── Tabela ────────────────────────────────────────────────────────────────────
+
+.icon-table {
+  background: rgba(245, 158, 11, 0.1);
+  stroke: #F59E0B;
+}
+
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: #10B981;
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  white-space: nowrap;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke: white;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: #059669;
+  }
+
+  &:disabled {
+    background: var(--border-color);
+    cursor: not-allowed;
+  }
+}
+
+.table-content {
+  padding: 0;
+  overflow: hidden;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 520px;
+}
+
+.po-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  // Cabeçalho fixo
+  th.mat-header-cell {
+    background: var(--primary-color) !important;
+    color: white !important;
+    font-family: "Montserrat", sans-serif !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    padding: 12px 10px !important;
+    white-space: nowrap;
+    border-bottom: none !important;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+
+    &:first-child {
+      text-align: left !important;
+      min-width: 180px;
+      position: sticky;
+      left: 0;
+      z-index: 3;
+    }
+  }
+
+  td.mat-cell {
+    font-family: "Montserrat", sans-serif !important;
+    font-size: 0.82rem !important;
+    color: var(--text-primary) !important;
+    text-align: center !important;
+    padding: 10px 10px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+
+    &:first-child {
+      text-align: left !important;
+      font-weight: 500;
+      background: white;
+      position: sticky;
+      left: 0;
+      z-index: 1;
+    }
+
+    &.zero {
+      color: var(--text-secondary) !important;
+      opacity: 0.4;
+    }
+  }
+
+  // Linha de totais
+  tr.mat-row td.total-row {
+    background: rgba(79, 70, 229, 0.06) !important;
+    font-weight: 700 !important;
+    color: var(--primary-color) !important;
+    border-top: 2px solid var(--primary-color) !important;
+
+    &:first-child {
+      background: rgba(79, 70, 229, 0.06) !important;
+    }
+  }
+
+  // Coluna total
+  .col-total {
+    font-weight: 700 !important;
+    background: rgba(79, 70, 229, 0.04);
+    border-left: 2px solid var(--border-color) !important;
+  }
+
+  // Zebra
+  tr.mat-row:nth-child(even) td.mat-cell:not(.total-row) {
+    background: var(--bg-primary);
+
+    &:first-child {
+      background: var(--bg-primary);
+    }
+  }
+
+  tr.mat-row:hover td.mat-cell:not(.total-row) {
+    background: rgba(79, 70, 229, 0.04) !important;
+
+    &:first-child {
+      background: rgba(79, 70, 229, 0.04) !important;
+    }
+  }
+}

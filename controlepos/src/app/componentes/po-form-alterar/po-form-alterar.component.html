@@ -107,6 +107,16 @@
           <mat-label>Data de Arquivamento</mat-label>
           <input matInput formControlName="data_arquivamento" placeholder="dd/mm/aaaa" appAutoDateSlash>
         </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field form-field-full">
+          <mat-label>Link do Modelo</mat-label>
+          <input matInput formControlName="linkDoModelo" placeholder="https://...">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Tipo do Arquivo Modelo</mat-label>
+          <input matInput formControlName="tipoDoArquivoModelo" placeholder="Ex: PDF, DOCX, XLSX">
+        </mat-form-field>
       </div>
 
       <div class="form-actions">

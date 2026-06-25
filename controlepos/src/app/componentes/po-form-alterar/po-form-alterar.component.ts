@@ -90,7 +90,9 @@ export class PoFormAlterarComponent implements OnInit, OnDestroy {
       tipo_solicitante: [''],
       data_enc_dro: [''], // No HTML não há mat-error para 'required'
       numero_controle: [''],
-      data_arquivamento: [''] // No HTML não há mat-error para 'required'
+      data_arquivamento: [''], // No HTML não há mat-error para 'required'
+      linkDoModelo: [''],
+      tipoDoArquivoModelo: ['']
     });
   }
 

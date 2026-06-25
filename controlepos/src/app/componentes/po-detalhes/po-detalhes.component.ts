@@ -81,4 +81,22 @@ export class PoDetalhesComponent implements OnInit {
       this.router.navigate(['/po-lista', 'Oeste']); // Ou para /menu ou uma rota de erro mais genérica
     }
   }
+
+  getAppName(tipoArquivo: string | undefined): string {
+    if (!tipoArquivo) return 'Desconhecido';
+    const tipo = tipoArquivo.toLowerCase().trim();
+    if (tipo === 'cdr' || tipo === 'corel' || tipo === 'coreldraw') return 'CorelDRAW';
+    if (tipo === 'dwg' || tipo === 'dxf' || tipo === 'autocad') return 'AutoCAD';
+    if (tipo === 'dgn' || tipo === 'microstation') return 'MicroStation';
+    return tipoArquivo;
+  }
+
+  getAppBadgeClass(tipoArquivo: string | undefined): string {
+    if (!tipoArquivo) return 'badge-default';
+    const tipo = tipoArquivo.toLowerCase().trim();
+    if (tipo === 'cdr' || tipo === 'corel' || tipo === 'coreldraw') return 'badge-corel';
+    if (tipo === 'dwg' || tipo === 'dxf' || tipo === 'autocad') return 'badge-autocad';
+    if (tipo === 'dgn' || tipo === 'microstation') return 'badge-microstation';
+    return 'badge-default';
+  }
 }
