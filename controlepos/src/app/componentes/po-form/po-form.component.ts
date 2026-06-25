@@ -97,8 +97,8 @@ export class PoFormComponent implements OnInit, OnDestroy {
       data_enc_dro: [''], // Não obrigatório
       numero_controle: [''],
       data_arquivamento: [''], // Não obrigatório
-      linkDoModelo: [''],
-      tipoDoArquivoModelo: [''],
+      link_do_modelo: [''],
+      tipo_do_arquivo_modelo: [''],
       // Adicione aqui os campos 'criado_em' e 'ultima_edicao' se precisar gerenciá-los no form,
       // mas geralmente são gerenciados pelo backend/AppScript.
       // criado_em: [{ value: '', disabled: true }],

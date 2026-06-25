@@ -123,6 +123,124 @@
   grid-column: 1 / -1;
 }
 
+/* ===== Secao Arquivo Modelo ===== */
+.modelo-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #eef0ff 100%);
+  border: 1px solid #e0e3ff;
+}
+
+.modelo-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.modelo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #e0e7ff;
+  color: #4338ca;
+  flex-shrink: 0;
+
+  svg {
+    width: 26px;
+    height: 26px;
+    stroke: currentColor;
+  }
+
+  &.badge-corel { background: #d1fae5; color: #065f46; }
+  &.badge-autocad { background: #fef3c7; color: #92400e; }
+  &.badge-microstation { background: #ede9fe; color: #5b21b6; }
+  &.badge-pdf { background: #fee2e2; color: #991b1b; }
+  &.badge-docx { background: #dbeafe; color: #1e40af; }
+  &.badge-xlsx { background: #d1fae5; color: #065f46; }
+  &.badge-default { background: #e0e7ff; color: #4338ca; }
+}
+
+.modelo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modelo-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.badge-app {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #e0e7ff;
+  color: #4338ca;
+
+  &.badge-corel { background: #d1fae5; color: #065f46; }
+  &.badge-autocad { background: #fef3c7; color: #92400e; }
+  &.badge-microstation { background: #ede9fe; color: #5b21b6; }
+  &.badge-pdf { background: #fee2e2; color: #991b1b; }
+  &.badge-docx { background: #dbeafe; color: #1e40af; }
+  &.badge-xlsx { background: #d1fae5; color: #065f46; }
+  &.badge-default { background: #e0e7ff; color: #4338ca; }
+}
+
+.btn-open-modelo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  color: #ffffff;
+  border-radius: 12px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.35);
+  transition: all 0.2s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: white;
+  }
+
+  span {
+    color: white;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -4px rgba(79, 70, 229, 0.5);
+  }
+
+  &:visited {
+    color: #ffffff;
+  }
+}
+
+/* ===== Fim Secao Arquivo Modelo ===== */
+
 .text-blocks {
   display: flex;
   flex-direction: column;
@@ -246,6 +364,15 @@
 
   .detalhes-actions {
     padding: 20px;
+    justify-content: center;
+  }
+
+  .modelo-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-open-modelo {
     justify-content: center;
   }
 }

@@ -109,7 +109,7 @@
         </div>
       </div>
 
-      <div class="info-section" *ngIf="po.linkDoModelo">
+      <div class="info-section" *ngIf="po.link_do_modelo">
         <h3 class="section-title">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round"
@@ -117,16 +117,27 @@
           </svg>
           Arquivo Modelo
         </h3>
-        <div class="modelo-section">
-          <span class="badge badge-app" [ngClass]="getAppBadgeClass(po.tipoDoArquivoModelo)">
-            {{ getAppName(po.tipoDoArquivoModelo) }}
-          </span>
-          <a [href]="po.linkDoModelo" target="_blank" rel="noopener noreferrer" class="btn-open-modelo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <div class="modelo-card">
+          <div class="modelo-info">
+            <div class="modelo-icon" [ngClass]="getAppBadgeClass(po.tipo_do_arquivo_modelo)">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+            </div>
+            <div class="modelo-text">
+              <span class="modelo-title">Modelo disponível</span>
+              <span class="badge-app" [ngClass]="getAppBadgeClass(po.tipo_do_arquivo_modelo)">
+                {{ getAppName(po.tipo_do_arquivo_modelo) }}
+              </span>
+            </div>
+          </div>
+          <a [href]="po.link_do_modelo" target="_blank" rel="noopener noreferrer" class="btn-open-modelo">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
             </svg>
-            Abrir Modelo
+            <span>Abrir Modelo</span>
           </a>
         </div>
       </div>

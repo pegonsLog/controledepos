@@ -97,6 +97,9 @@ export class PoDetalhesComponent implements OnInit {
     if (tipo === 'cdr' || tipo === 'corel' || tipo === 'coreldraw') return 'badge-corel';
     if (tipo === 'dwg' || tipo === 'dxf' || tipo === 'autocad') return 'badge-autocad';
     if (tipo === 'dgn' || tipo === 'microstation') return 'badge-microstation';
+    if (tipo === 'pdf') return 'badge-pdf';
+    if (tipo === 'docx' || tipo === 'doc' || tipo === 'word') return 'badge-docx';
+    if (tipo === 'xlsx' || tipo === 'xls' || tipo === 'excel') return 'badge-xlsx';
     return 'badge-default';
   }
 }
